@@ -1,0 +1,9 @@
+fastapi>=0.100.0
+uvicorn[standard]>=0.20.0
+pydantic>=2.0.0
+python-multipart>=0.0.6
+aiofiles>=23.0.0
+numpy>=1.21.0
+# scikit-learn is optional — the project uses a pure-Python RF by default
+# Install only if you want to experiment with sklearn alternatives:
+# scikit-learn>=1.0

@@ -1,0 +1,1720 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>LifeGuardian AI</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{font-size:14px}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;background:#f1f5f9;color:#1e293b;min-height:100vh;-webkit-font-smoothing:antialiased}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:3px}
+
+/* ── Layout ── */
+#proto-banner{background:linear-gradient(90deg,#1e3a5f,#0f766e);color:#fff;font-size:11px;padding:0 12px;position:fixed;top:0;left:0;right:0;z-index:100;letter-spacing:.02em;line-height:1.4;display:flex;align-items:center;justify-content:center;gap:8px;height:28px;min-height:28px}
+#proto-banner.hidden{display:none!important}
+#proto-banner-text{flex:1;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#proto-close{background:none;border:none;color:rgba(255,255,255,.7);cursor:pointer;font-size:18px;line-height:1;padding:0 6px;flex-shrink:0;display:flex;align-items:center;justify-content:center;border-radius:3px;transition:color .14s;height:28px;width:28px;touch-action:manipulation}
+#proto-close:hover,#proto-close:focus{color:#fff;outline:none}
+#lang-bar{background:#0f172a;color:#fff;font-size:12px;display:flex;align-items:center;gap:0;padding:0 16px;position:fixed;top:28px;left:0;right:0;z-index:99;height:36px;border-bottom:1px solid #1e3a5f;transition:top .15s}
+#lang-bar.banner-hidden{top:0}
+#app{display:flex;padding-top:64px;min-height:100vh;transition:padding-top .15s}
+#app.banner-hidden{padding-top:36px}
+#sidebar{width:216px;background:#fff;border-right:1px solid #e2e8f0;position:fixed;top:64px;bottom:0;left:0;z-index:50;display:flex;flex-direction:column;padding:12px 10px;overflow-y:auto;flex-shrink:0;transition:top .15s}
+#sidebar.banner-hidden{top:36px}
+#main{margin-left:216px;flex:1;padding:22px 26px 40px;min-width:0;overflow-x:hidden}
+#page-area{max-width:1060px;margin:0 auto}
+
+/* ── Sidebar ── */
+.logo-row{display:flex;align-items:center;gap:9px;padding:2px 4px 12px;border-bottom:1px solid #f1f5f9;margin-bottom:7px}
+.logo-mark{width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,#0f172a,#0d9488);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.logo-mark svg{stroke:#7dd3fc}
+.logo-name{font-weight:700;font-size:13px;color:#0f172a;line-height:1.2}
+.logo-ver{font-size:9.5px;color:#94a3b8}
+.nav-btn{display:flex;align-items:center;gap:8px;width:100%;padding:7px 10px;border:none;background:none;border-radius:7px;cursor:pointer;font-size:12.5px;font-weight:500;color:#64748b;text-align:left;transition:background .14s,color .14s;white-space:nowrap;overflow:hidden}
+.nav-btn:hover{background:#f0f9ff;color:#0ea5e9}
+.nav-btn.active{background:linear-gradient(135deg,#0f172a,#1e3a5f);color:#fff}
+.nav-btn.active svg{stroke:#7dd3fc!important}
+.nav-badge{margin-left:auto;font-size:9px;background:#eff6ff;color:#3b82f6;padding:1px 5px;border-radius:3px;font-weight:700;flex-shrink:0;min-width:18px;text-align:center}
+.nav-badge.red{background:#fee2e2;color:#dc2626}
+.sidebar-footer{margin-top:auto;padding-top:10px;border-top:1px solid #f1f5f9}
+.sys-dot{width:6px;height:6px;border-radius:50%;background:#22c55e;flex-shrink:0}
+.sys-status{display:flex;align-items:center;gap:7px;padding:4px 5px;font-size:11px;color:#64748b}
+
+/* ── Cards ── */
+.card{background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:16px;box-shadow:0 1px 2px rgba(0,0,0,.04)}
+
+/* ── Buttons ── */
+.btn{border:none;border-radius:8px;padding:8px 16px;font-size:13px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:opacity .14s,background .14s;white-space:nowrap}
+.btn-primary{background:linear-gradient(135deg,#0f172a,#1e3a5f);color:#fff;box-shadow:0 1px 6px rgba(15,23,42,.18)}
+.btn-primary:hover{opacity:.88}
+.btn-teal{background:linear-gradient(135deg,#0d9488,#14b8a6);color:#fff;box-shadow:0 1px 6px rgba(13,148,136,.2)}
+.btn-teal:hover{opacity:.88}
+.btn-outline{background:#fff;color:#334155;border:1.5px solid #e2e8f0}
+.btn-outline:hover{border-color:#0ea5e9;color:#0ea5e9;background:#f0f9ff}
+.btn-danger{background:#fff;color:#dc2626;border:1.5px solid #fecaca}
+.btn-danger:hover{background:#fef2f2}
+.btn-sm{padding:5px 12px;font-size:12px}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+
+/* ── Badges ── */
+.badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:99px;font-size:11px;font-weight:700;letter-spacing:.03em;text-transform:uppercase}
+.badge-low{background:#dcfce7;color:#16a34a}
+.badge-medium{background:#fef3c7;color:#d97706}
+.badge-high{background:#fee2e2;color:#dc2626}
+.badge-blue{background:#dbeafe;color:#1d4ed8}
+.badge-gray{background:#f1f5f9;color:#64748b}
+.badge-model{background:#ede9fe;color:#7c3aed}
+.badge-purple{background:#f5f3ff;color:#5b21b6}
+
+/* ── Sliders ── */
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:5px;background:#e2e8f0;border-radius:3px;outline:none;cursor:pointer}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:linear-gradient(135deg,#0f172a,#1e40af);box-shadow:0 1px 3px rgba(0,0,0,.2);cursor:pointer}
+input[type=range].teal::-webkit-slider-thumb{background:linear-gradient(135deg,#0d9488,#14b8a6)}
+
+/* ── Activity state buttons ── */
+.act-btn{flex:1;min-width:60px;border:2px solid #e2e8f0;border-radius:9px;padding:10px 6px;background:#fff;cursor:pointer;transition:all .14s;display:flex;flex-direction:column;align-items:center;gap:4px;font-size:11.5px;font-weight:600;color:#475569}
+.act-btn:hover{border-color:#38bdf8;background:#f0f9ff}
+.act-btn.sel{border-color:#0f172a;background:linear-gradient(135deg,#0f172a,#1e3a5f);color:#fff}
+.act-btn.sel svg{stroke:#7dd3fc!important}
+
+/* ── Scenario cards ── */
+.sc-card{border:2px solid #e2e8f0;border-radius:10px;padding:12px;cursor:pointer;background:#fff;transition:all .14s;display:flex;align-items:flex-start;gap:9px}
+.sc-card:hover{border-color:#38bdf8;background:#f0f9ff}
+.sc-card.sel-low{border-color:#22c55e;background:#f0fdf4}
+.sc-card.sel-med{border-color:#f59e0b;background:#fffbeb}
+.sc-card.sel-high{border-color:#ef4444;background:#fef2f2}
+.sc-card.running{opacity:.6;cursor:not-allowed}
+
+/* ── KPI grid ── */
+.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+.kpi-card{background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:14px 16px;box-shadow:0 1px 2px rgba(0,0,0,.04);display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
+.kpi-label{font-size:10.5px;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px}
+.kpi-val{font-size:22px;font-weight:800;color:#0f172a;line-height:1;word-break:break-word}
+.kpi-sub{font-size:11px;color:#94a3b8;margin-top:4px}
+.kpi-icon{width:38px;height:38px;min-width:38px;border-radius:10px;display:flex;align-items:center;justify-content:center}
+
+/* ── Charts ── */
+.bar-wrap{display:flex;align-items:flex-end;gap:2px;width:100%}
+.bar-col{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end}
+.bar-fill{width:100%;border-radius:2px 2px 0 0;min-height:2px;transition:height .4s}
+.bar-label{font-size:8.5px;color:#94a3b8;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;text-align:center}
+.timeline{display:flex;align-items:flex-end;gap:2px;height:56px;width:100%}
+.tl-bar{flex:1;border-radius:2px 2px 0 0;min-height:2px;transition:height .3s,background .3s}
+
+/* ── Tables ── */
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+th{text-align:left;padding:6px 10px;font-size:10px;color:#94a3b8;font-weight:700;text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid #f1f5f9}
+td{padding:8px 10px;border-bottom:1px solid #f8fafc;color:#334155;vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:#f8fafc}
+
+/* ── Status animations ── */
+@keyframes glowG{0%,100%{box-shadow:0 0 0 0 rgba(34,197,94,.3)}50%{box-shadow:0 0 0 7px rgba(34,197,94,0)}}
+@keyframes glowA{0%,100%{box-shadow:0 0 0 0 rgba(245,158,11,.3)}50%{box-shadow:0 0 0 7px rgba(245,158,11,0)}}
+@keyframes glowR{0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,.3)}50%{box-shadow:0 0 0 9px rgba(239,68,68,0)}}
+@keyframes pulse{0%,100%{opacity:.7;transform:scale(1)}50%{opacity:.3;transform:scale(1.07)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes stepIn{from{opacity:0;transform:translateX(-8px)}to{opacity:1;transform:translateX(0)}}
+.glow-g{animation:glowG 2s ease-in-out infinite}
+.glow-a{animation:glowA 1.5s ease-in-out infinite}
+.glow-r{animation:glowR 1s ease-in-out infinite}
+.pulse-ring{animation:pulse 2s ease-in-out infinite}
+.spin{animation:spin .8s linear infinite}
+.step-in{animation:stepIn .3s ease-out both}
+
+/* ── Page animation ── */
+@keyframes pageIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.page-in{animation:pageIn .2s ease-out}
+
+/* ── Toast ── */
+#toast{position:fixed;bottom:20px;right:20px;z-index:9999;background:#fff;border:1px solid #e2e8f0;border-radius:11px;padding:11px 15px;box-shadow:0 8px 28px rgba(0,0,0,.11);display:none;align-items:center;gap:8px;font-size:12.5px;max-width:340px}
+@keyframes toastIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+.toast-show{display:flex!important;animation:toastIn .22s ease-out}
+
+/* ── Hero ── */
+.hero{background:linear-gradient(135deg,#0f172a 0%,#1e3a5f 55%,#0f766e 100%);border-radius:14px;padding:24px;color:#fff;position:relative;overflow:hidden;margin-bottom:20px}
+.hero::before{content:'';position:absolute;top:-30px;right:-30px;width:160px;height:160px;border-radius:50%;background:rgba(255,255,255,.03);pointer-events:none}
+
+/* ── Grid ── */
+.grid2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px}
+.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.grid4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.flex-row{display:flex;align-items:center;gap:9px}
+.flex-col{display:flex;flex-direction:column;gap:11px}
+
+/* ── Section header ── */
+.sec-hdr{display:flex;align-items:center;gap:10px;margin-bottom:18px}
+.sec-icon{width:36px;height:36px;min-width:36px;border-radius:10px;display:flex;align-items:center;justify-content:center}
+.sec-title{font-size:17px;font-weight:700;color:#0f172a}
+.sec-sub{font-size:12.5px;color:#64748b;margin-top:1px}
+
+/* ── Form labels ── */
+.field-label{font-size:12.5px;font-weight:600;color:#0f172a;margin-bottom:3px}
+.field-hint{font-size:11px;color:#94a3b8;margin-bottom:8px;line-height:1.5}
+.field-val{background:#f1f5f9;color:#0f172a;border-radius:5px;padding:1px 9px;font-size:13px;font-weight:700;display:inline-block;white-space:nowrap}
+
+/* ── Metric boxes ── */
+.metric-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.metric-box{background:#f8fafc;border:1px solid #e2e8f0;border-radius:9px;padding:12px 14px;text-align:center}
+.metric-num{font-size:24px;font-weight:800;color:#0f172a;line-height:1}
+.metric-lbl{font-size:10.5px;color:#64748b;font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-top:3px}
+
+/* ── Confusion matrix ── */
+.cm-table{border-collapse:collapse;font-size:12px;width:100%}
+.cm-table th{background:#f8fafc;padding:6px 10px;text-align:center;font-weight:700;color:#475569;border:1px solid #e2e8f0}
+.cm-table td{padding:7px 10px;text-align:center;border:1px solid #e2e8f0;font-weight:600}
+.cm-diagonal{background:#dcfce7;color:#166534}
+
+/* ── Prob bars ── */
+.prob-bar-track{background:#f1f5f9;border-radius:3px;height:8px;flex:1}
+.prob-bar-fill{height:100%;border-radius:3px;transition:width .5s ease}
+
+/* ── AI response ── */
+.resp-card{border-radius:11px;padding:16px}
+.resp-head{font-size:15px;font-weight:700;margin-bottom:8px;line-height:1.35}
+.resp-body{font-size:13px;color:#334155;line-height:1.65;margin-bottom:12px}
+.resp-sug{font-size:12.5px;color:#0f172a;line-height:1.6;padding:10px 12px;border-radius:8px;background:#f8fafc;border-left:3px solid #0d9488}
+.factor-item{font-size:12px;color:#475569;padding:3px 0;display:flex;align-items:flex-start;gap:6px;line-height:1.5}
+
+/* ── Disclaimer ── */
+.disclaimer-box{background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:10px 12px;font-size:11.5px;color:#92400e;line-height:1.55}
+.sim-notice{background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:8px 12px;font-size:11.5px;color:#166534;display:flex;align-items:center;gap:7px}
+
+/* ── Model source badge ── */
+.model-source{display:inline-flex;align-items:center;gap:5px;font-size:10.5px;padding:2px 7px;border-radius:99px;font-weight:600}
+.model-source.ml{background:#ede9fe;color:#5b21b6}
+.model-source.heuristic{background:#f1f5f9;color:#64748b}
+
+/* ── Notification items ── */
+.notif-item{border-radius:10px;padding:12px 14px;border:1px solid #e2e8f0;background:#fff;transition:background .14s;position:relative}
+.notif-item.unread{background:#f8faff;border-color:#bfdbfe}
+.notif-item.risk-high{border-left:3px solid #ef4444}
+.notif-item.risk-medium{border-left:3px solid #f59e0b}
+.notif-item.risk-low{border-left:3px solid #22c55e}
+
+/* ── Step list ── */
+.step-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #f8fafc}
+.step-row:last-child{border-bottom:none}
+.step-num{width:22px;height:22px;min-width:22px;border-radius:50%;background:#e2e8f0;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#475569}
+.step-num.done{background:#dcfce7;color:#166534}
+.step-num.active{background:#dbeafe;color:#1d4ed8}
+
+/* ── Q-table ── */
+.qtable{border-collapse:collapse;width:100%;font-size:11.5px}
+.qtable th{background:#f8fafc;padding:5px 8px;border:1px solid #e2e8f0;font-weight:700;color:#475569;text-align:center;font-size:10.5px}
+.qtable td{padding:5px 8px;border:1px solid #e2e8f0;text-align:center}
+.qtable .best-action{background:#dcfce7;font-weight:800;color:#166534}
+.qtable .state-cell{text-align:left;font-weight:600;color:#0f172a}
+
+/* ── Reward chart ── */
+.reward-chart{height:120px;display:flex;align-items:flex-end;gap:1px}
+.reward-bar{flex:1;border-radius:2px 2px 0 0;min-height:2px;transition:height .4s}
+
+/* ── Select ── */
+select{border:1.5px solid #e2e8f0;border-radius:7px;padding:6px 10px;font-size:12.5px;background:#fff;color:#334155;cursor:pointer;outline:none}
+select:focus{border-color:#0ea5e9}
+
+/* ── Lang bar ── */
+.lang-btn{background:none;border:none;color:rgba(255,255,255,.55);font-size:12px;font-weight:500;cursor:pointer;padding:4px 10px;border-radius:5px;transition:all .14s;white-space:nowrap}
+.lang-btn:hover{color:#fff;background:rgba(255,255,255,.1)}
+.lang-btn.active{color:#7dd3fc;font-weight:700;background:rgba(255,255,255,.08)}
+.lang-sep{color:rgba(255,255,255,.2);padding:0 4px;font-size:11px}
+
+/* ── Hindi ── */
+.lang-hi{font-size:13.5px;line-height:1.7}
+.lang-hi .kpi-val{font-size:18px}
+.lang-hi .nav-btn{font-size:12px}
+
+/* ── Mobile ── */
+/* Pixel math: banner=28px, lang-bar=32px, mob-topbar=42px */
+/* With banner:    lang-bar top=28, mob-topbar top=60, main pt=28+32+42=102 */
+/* Without banner: lang-bar top=0,  mob-topbar top=32, main pt=32+42=74     */
+@media(max-width:760px){
+  #sidebar{transform:translateX(-100%);transition:transform .24s}
+  #sidebar.open{transform:translateX(0)}
+  #lang-bar{padding:0 8px;height:32px;top:28px}
+  #lang-bar.banner-hidden{top:0}
+  #lang-bar .lang-label{display:none}
+  #lang-bar .lang-btn{font-size:11px;padding:3px 7px}
+  #main{margin-left:0;padding:10px 12px 80px;padding-top:102px}
+  #main.banner-hidden{padding-top:74px}
+  .kpi-grid{grid-template-columns:1fr 1fr}
+  .grid2,.grid3,.grid4{grid-template-columns:1fr}
+  .metric-grid{grid-template-columns:repeat(2,1fr)}
+  #mob-bar{display:flex!important}
+  #mob-topbar{display:flex!important;top:60px}
+  .hero{padding:16px;border-radius:10px}
+  .hero h1{font-size:18px!important}
+  .sec-title{font-size:15px}
+  .kpi-val{font-size:18px}
+  .btn{white-space:normal;line-height:1.3}
+}
+@media(max-width:900px){
+  .kpi-grid{grid-template-columns:1fr 1fr}
+}
+#mob-bar{display:none;position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #e2e8f0;z-index:60;padding:4px 0 env(safe-area-inset-bottom,4px)}
+#mob-topbar{display:none;position:fixed;top:64px;left:0;right:0;background:#fff;border-bottom:1px solid #e2e8f0;z-index:49;padding:8px 14px;align-items:center;justify-content:space-between;transition:top .15s}
+/* desktop: banner(28)+lang-bar(36)=64 → without banner: lang-bar(36)=36 */
+#mob-topbar.banner-hidden{top:36px}
+/* mobile override comes after so it wins */
+@media(max-width:760px){
+  #mob-topbar.banner-hidden{top:32px}
+}
+#overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:45}
+.mob-nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:4px 2px;background:none;border:none;cursor:pointer;font-size:9px;font-weight:500;color:#94a3b8;min-width:0;overflow:hidden}
+.mob-nav-btn.active{color:#0f172a}
+.mob-nav-btn svg{flex-shrink:0}
+.mob-nav-btn span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%;display:block}
+
+/* ── Confirm dialog ── */
+#confirm-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:200;align-items:center;justify-content:center}
+#confirm-overlay.show{display:flex}
+#confirm-box{background:#fff;border-radius:14px;padding:24px;max-width:360px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,.18)}
+
+/* ── Large text mode ── */
+html.text-large body{font-size:16px}
+html.text-large .nav-btn{font-size:14.5px!important}
+html.text-large .logo-name{font-size:15px!important}
+html.text-large .logo-ver{font-size:11px!important}
+html.text-large .sec-title{font-size:20px!important}
+html.text-large .sec-sub{font-size:14.5px!important}
+html.text-large .field-label{font-size:14.5px!important}
+html.text-large .field-hint{font-size:12.5px!important}
+html.text-large .field-val{font-size:15px!important}
+html.text-large .kpi-label{font-size:12.5px!important}
+html.text-large .kpi-val{font-size:26px!important}
+html.text-large .kpi-sub{font-size:13px!important}
+html.text-large .btn{font-size:15px!important}
+html.text-large .btn-sm{font-size:14px!important}
+html.text-large .badge{font-size:13px!important}
+html.text-large table{font-size:14.5px!important}
+html.text-large th{font-size:12px!important}
+html.text-large td{font-size:14px!important}
+html.text-large .card p,html.text-large .card div,html.text-large .card span{font-size:inherit}
+html.text-large .resp-head{font-size:17px!important}
+html.text-large .resp-body{font-size:15px!important}
+html.text-large .resp-sug{font-size:14.5px!important}
+html.text-large .factor-item{font-size:14px!important}
+html.text-large .notif-item{font-size:14px}
+html.text-large .disclaimer-box,html.text-large .sim-notice{font-size:13.5px!important}
+html.text-large .metric-lbl{font-size:12.5px!important}
+html.text-large .metric-num{font-size:27px!important}
+html.text-large .act-btn{font-size:13.5px!important}
+html.text-large .sc-card{font-size:14px}
+html.text-large .step-row{font-size:14px}
+html.text-large .qtable{font-size:13.5px!important}
+html.text-large .qtable th{font-size:12.5px!important}
+html.text-large select{font-size:14.5px!important}
+html.text-large .hero p,html.text-large .hero div,html.text-large .hero span{font-size:inherit}
+html.text-large #toast{font-size:14.5px!important}
+html.text-large #proto-banner{font-size:12.5px!important}
+html.text-large .lang-btn{font-size:14px!important}
+html.text-large .mob-nav-btn{font-size:11px!important}
+html.text-large .bar-label{font-size:10px!important}
+html.text-large .sys-status{font-size:13px!important}
+html.text-large .model-source{font-size:12.5px!important}
+/* Scale all generic inline-styled text inside cards proportionally */
+html.text-large [style*="font-size:13px"]{font-size:15px!important}
+html.text-large [style*="font-size:12.5px"]{font-size:14.5px!important}
+html.text-large [style*="font-size:12px"]{font-size:14px!important}
+html.text-large [style*="font-size:11.5px"]{font-size:13.5px!important}
+html.text-large [style*="font-size:11px"]{font-size:13px!important}
+html.text-large [style*="font-size:10.5px"]{font-size:12.5px!important}
+html.text-large [style*="font-size:10px"]{font-size:12px!important}
+html.text-large [style*="font-size:15px"]{font-size:17px!important}
+html.text-large [style*="font-size:17px"]{font-size:19px!important}
+html.text-large [style*="font-size:18px"]{font-size:20px!important}
+html.text-large [style*="font-size:22px"]{font-size:25px!important}
+html.text-large [style*="font-size:24px"]{font-size:27px!important}
+/* Mobile overrides for large text */
+@media(max-width:760px){
+  html.text-large .kpi-val{font-size:20px!important}
+  html.text-large .metric-num{font-size:22px!important}
+  html.text-large .nav-btn{font-size:13.5px!important}
+  html.text-large .btn{white-space:normal;line-height:1.4}
+}
+</style>
+</head>
+<body>
+<div id="proto-banner"><span id="proto-banner-text">PROTOTYPE — Simulated data only. No real sensors, medical devices, or emergency services connected.</span><button id="proto-close" onclick="closeBanner()" aria-label="Close banner">×</button></div>
+
+<!-- Language selector bar — always visible on far left of header -->
+<div id="lang-bar">
+  <span class="lang-label" style="color:rgba(255,255,255,.4);font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;margin-right:8px" id="lb-label">Language</span>
+  <span class="lang-sep">|</span>
+  <button class="lang-btn active" id="lb-en" onclick="setLang('en')" aria-label="Switch to English">English</button>
+  <span class="lang-sep">|</span>
+  <button class="lang-btn" id="lb-hi" onclick="setLang('hi')" aria-label="हिन्दी में बदलें">हिन्दी</button>
+  <div style="flex:1"></div>
+  <span id="lb-model" style="font-size:10.5px;color:rgba(255,255,255,.3);display:flex;align-items:center;gap:5px">
+    <span id="lb-model-dot" style="width:5px;height:5px;border-radius:50%;background:#f59e0b;display:inline-block"></span>
+    <span id="lb-model-txt">Checking…</span>
+  </span>
+</div>
+
+<div id="overlay" onclick="closeMobile()"></div>
+
+<!-- Confirm dialog -->
+<div id="confirm-overlay">
+  <div id="confirm-box">
+    <div id="confirm-title" style="font-size:15px;font-weight:700;color:#0f172a;margin-bottom:8px"></div>
+    <div id="confirm-body" style="font-size:13px;color:#64748b;line-height:1.6;margin-bottom:18px"></div>
+    <div style="display:flex;gap:9px;justify-content:flex-end">
+      <button class="btn btn-outline btn-sm" onclick="confirmCancel()" id="confirm-cancel-btn">Cancel</button>
+      <button class="btn btn-danger btn-sm" onclick="confirmOk()" id="confirm-ok-btn">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<!-- Mobile top bar -->
+<div id="mob-topbar">
+  <div style="display:flex;align-items:center;gap:8px">
+    <div class="logo-mark" style="width:26px;height:26px">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
+    </div>
+    <span id="mob-appname" style="font-weight:700;font-size:13px;color:#0f172a">LifeGuardian AI</span>
+  </div>
+  <button onclick="openMobile()" style="background:none;border:none;cursor:pointer;padding:4px;display:flex" aria-label="Open menu">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#334155" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+  </button>
+</div>
+<!-- Note: lang-bar is visible on mobile too — it sits at top:28px fixed, above the mobile topbar offset -->
+
+<div id="app">
+  <nav id="sidebar">
+    <div class="logo-row">
+      <div class="logo-mark">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
+      </div>
+      <div>
+        <div class="logo-name" id="sb-appname">LifeGuardian AI</div>
+        <div class="logo-ver">v3.0 · Prototype</div>
+      </div>
+    </div>
+    <div id="nav-items"></div>
+    <div class="sidebar-footer">
+      <div class="sys-status">
+        <div class="sys-dot"></div>
+        <span id="sb-sys">System Active</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:6px;padding:3px 5px;font-size:10.5px;color:#64748b;margin-top:2px">
+        <div id="sb-model-dot" style="width:6px;height:6px;border-radius:50%;background:#94a3b8;flex-shrink:0"></div>
+        <span id="sb-model-txt">Checking model…</span>
+      </div>
+    </div>
+  </nav>
+
+  <main id="main">
+    <div id="page-area"></div>
+  </main>
+</div>
+
+<!-- Mobile bottom nav -->
+<div id="mob-bar">
+  <button class="mob-nav-btn" data-page="dashboard" onclick="nav('dashboard')">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+    <span id="mb0">Home</span>
+  </button>
+  <button class="mob-nav-btn" data-page="activity" onclick="nav('activity')">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+    <span id="mb1">Activity</span>
+  </button>
+  <button class="mob-nav-btn" data-page="emergency" onclick="nav('emergency')">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg>
+    <span id="mb2">Sim</span>
+  </button>
+  <button class="mob-nav-btn" data-page="history" onclick="nav('history')">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg>
+    <span id="mb3">History</span>
+  </button>
+  <button class="mob-nav-btn" data-page="about" onclick="nav('about')">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+    <span id="mb4">Settings</span>
+  </button>
+</div>
+
+<!-- Toast -->
+<div id="toast">
+  <span id="toast-icon" style="font-size:14px"></span>
+  <span id="toast-msg" style="flex:1;color:#1e293b"></span>
+  <button onclick="hideToast()" style="background:none;border:none;cursor:pointer;color:#94a3b8;padding:1px;display:flex" aria-label="Close">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+  </button>
+</div>
+
+<script>
+'use strict';
+
+// ═══════════════════════════════════════════════════════════
+// TRANSLATIONS
+// ═══════════════════════════════════════════════════════════
+const T = {
+en:{
+  appName:'LifeGuardian AI',
+  proto:'PROTOTYPE — Simulated data only. No real sensors, medical devices, or emergency services connected.',
+  sysActive:'System Active', modelReady:'ML Model Ready', modelNotReady:'Model not loaded',
+  nav:{dashboard:'Dashboard',activity:'Activity Monitor',risk:'Risk Analysis',ai:'AI Response',emergency:'Emergency Sim.',history:'Event History',lab:'Learning Lab',about:'About & Settings'},
+  dash:{
+    title:'Dashboard',greeting:'Welcome',subtitle:'Monitoring simulated activity in real time',
+    safeStatus:'All Clear',cautionStatus:'Caution',alertStatus:'Alert',
+    totalEvents:'Total Events',riskLevel:'Risk Level',activityState:'Activity State',unreadNotifs:'Unread Alerts',
+    breakdown:'Low / Med / High',trend:'Activity Trend (24h)',riskBreakdown:'Risk Breakdown',
+    recentEvents:'Recent Events',noEvents:'No events yet',noEventsDesc:'Run a scenario or use the Activity Monitor',
+    goMonitor:'Open Activity Monitor',viewHistory:'View History',simulate:'Run Scenario',openLab:'Open Learning Lab',
+    time:'Time',activity:'Activity',intensity:'Intensity',risk:'Risk',source:'Source',
+    low:'Low',medium:'Medium',high:'High',
+    walking:'Walking',sitting:'Sitting',lyingDown:'Lying Down',inactive:'Inactive',
+    mlPowered:'ML-powered',mlModel:'ML Model',heuristic:'Heuristic',
+    notifications:'Notifications',lastScenario:'Last Scenario',noNotifs:'No notifications',
+  },
+  act:{
+    title:'Activity Monitor',subtitle:'Simulate activity patterns and get ML risk predictions',
+    selectState:'Activity State',stateHint:'Select the simulated activity state',
+    walking:'Walking',sitting:'Sitting',lyingDown:'Lying Down',inactive:'Inactive',
+    inactDur:'Inactivity Duration',durHint:'Duration of inactivity in minutes',
+    min:'min',intensity:'Movement Intensity',intHint:'Relative movement strength (0=still, 100=vigorous)',
+    low:'Low',high:'High',scenarios:'Quick Scenarios',scenHint:'Load a predefined scenario',
+    sNormal:'Normal Activity',sInact:'Unusual Inactivity',sFall:'Possible Fall',
+    sNormalDesc:'Regular daily movement',sInactDesc:'Extended period without movement',sFallDesc:'Sudden spike then prolonged stillness',
+    analyze:'Analyze with ML',reset:'Reset',analyzing:'Running ML prediction…',
+    resultTitle:'ML Prediction',disclaimer:'Illustrative only — synthetic training data',
+    noResult:'Configure inputs and click Analyze to run the ML model',
+    rLow:'Low Risk',rMed:'Medium Risk',rHigh:'High Risk',
+    state:'State',dur:'Duration',int:'Intensity',scen:'Scenario',hour:'Hour',
+    timelineTitle:'Simulated Activity Timeline',timelineDesc:'Visual representation of current inputs',
+    probTitle:'Class Probabilities',probNote:'Illustrative probabilities — not medical probabilities',
+  },
+  risk:{
+    title:'Risk Analysis',subtitle:'ML model performance, metrics, and real-time prediction',
+    modelInfo:'Model Information',modelType:'Model Type',features:'Input Features',
+    trainData:'Training Data',status:'Status',ready:'Ready',notReady:'Not Ready',
+    metricsTitle:'Held-Out Test Metrics',metricsNote:'Computed on 20% held-out test set not used during training.',
+    syntheticWarning:'These metrics reflect how well the model learned SYNTHETIC labelling rules. They do NOT represent validated real-world accuracy for fall detection or health monitoring.',
+    accuracy:'Accuracy',precision:'Precision (weighted)',recall:'Recall (weighted)',f1:'F1-Score (weighted)',
+    perClass:'Per-Class Metrics',classLow:'Low',classMed:'Medium',classHigh:'High',
+    confMatrix:'Confusion Matrix',predicted:'Predicted',actual:'Actual',
+    trainSamples:'Train Samples',testSamples:'Test Samples',nEstimators:'Trees',
+    livePredict:'Live Prediction Test',liveDesc:'Enter inputs to run a live ML prediction',
+    runPredict:'Run Prediction',probabilities:'Prediction Probabilities',
+    modelDisclaimer:'This model is trained on synthetic demonstration data only. High accuracy means the model learned the labelling rules used during data generation.',
+    notReadyMsg:'Model not loaded. Run `python ml/train.py` in the backend directory, then restart the server.',
+  },
+  ai:{
+    title:'AI Response Assistant',subtitle:'Rule-based contextual response engine — no external AI',
+    noLLM:'Fully rule-based. No generative AI, paid API, or LLM is used.',
+    runAnalyze:'Run Activity Analysis First',runAnalyzeDesc:'Go to Activity Monitor, set inputs, click Analyze, then return here.',
+    headline:'Response Headline',explanation:'Explanation',suggestion:'Suggested Action',
+    factors:'Influencing Factors',engineType:'Engine',ruleBasedEngine:'Rule-Based Response Engine',
+    lastPrediction:'Based on last ML prediction',go:'Go to Activity Monitor',
+    disclaimer:'Prototype disclaimer',refresh:'Re-run with current inputs',
+  },
+  emerg:{
+    title:'Emergency Simulation',subtitle:'Run predefined demonstration scenarios with ML predictions',
+    selectScenario:'Select a Scenario',runBtn:'Run Scenario',resetBtn:'Reset',running:'Running…',
+    steps:'Simulated System Steps',result:'Scenario Result',response:'AI Response',
+    noResult:'Select a scenario above and click Run to start the simulation.',
+    simDisclaimer:'Simulated scenario only — no real emergency services contacted.',
+    warningFall:'Illustrative simulation. No confirmed fall has occurred.',
+    notifCreated:'Simulated notification created.',
+    normal:'Normal Activity',unusual:'Unusual Inactivity',fall:'Possible Fall Scenario',highRisk:'High-Risk Demonstration',
+    normalDesc:'Typical daily routine — regular movement',unusualDesc:'Extended period without movement',
+    fallDesc:'Sudden movement spike followed by prolonged immobility',highRiskDesc:'Combined factors: prolonged inactivity, minimal movement',
+  },
+  notif:{
+    title:'Notifications',subtitle:'Simulated alerts generated by scenario runs',
+    markRead:'Mark Read',markAllRead:'Mark All Read',dismiss:'Dismiss',clearAll:'Clear All',
+    unread:'unread',noNotifs:'No notifications',noNotifsDesc:'Run a scenario to generate simulated notifications.',
+    simNotice:'Simulated notification — no real alert was sent.',
+    simNoticeHi:'अनुकरणीय सूचना — कोई वास्तविक अलर्ट नहीं भेजा गया।',
+    high:'High Risk',medium:'Medium Risk',low:'Low Risk',
+    goEmerg:'Run a Scenario',
+  },
+  hist:{
+    title:'Event History',subtitle:'Local demonstration records — persisted across restarts',
+    filterType:'Filter by type',filterRisk:'Filter by risk',allTypes:'All types',allRisks:'All risks',
+    clearAll:'Clear History',confirmClear:'Clear all event history?',confirmClearBody:'This will permanently delete all recorded demonstration events.',
+    cancel:'Cancel',confirm:'Delete All',
+    noEvents:'No events recorded',noEventsDesc:'Events are recorded when you use the Activity Monitor or run Emergency Scenarios.',
+    time:'Time',category:'Category',activity:'Activity',risk:'Risk',source:'Source',notes:'Notes',
+    catActivity:'Activity Analysis',catScenario:'Scenario Run',catQLab:'Q-Learning',
+    total:'Total events',showing:'Showing',
+  },
+  lab:{
+    title:'Learning Lab',subtitle:'Educational Q-learning demonstration — runs locally',
+    intro:'Q-learning is a reinforcement-learning algorithm. The agent learns which action to take in each state by receiving rewards and penalties.',
+    states:'States (Situation)',actions:'Actions (Choices)',rewards:'Rewards & Penalties',
+    stateDesc:'The current observed situation.',actionDesc:'What the system can do.',
+    rewardDesc:'Feedback signal that teaches the agent.',
+    episodes:'Training Episodes',train:'Train Agent',training:'Training…',reset:'Reset',
+    rewardChart:'Cumulative Reward per Episode',qTable:'Learned Q-Table (Best Actions)',
+    agentDemo:'Agent Action Demo',selectState:'Select a State',bestAction:'Best Learned Action',
+    notTrained:'Agent not trained yet. Click Train Agent to start.',
+    trained:'Agent trained!',finalReward:'Final Avg Reward',seed:'Random Seed',
+    disclaimer:'This is an educational simulation. The agent does not perform real-world actions or send real alerts.',
+    stateLabel:'State',riskLabel:'Risk',idealLabel:'Ideal',learnedLabel:'Learned',correctLabel:'Correct',
+    hyperparams:'Hyperparameters',alpha:'Learning Rate',gamma:'Discount Factor',epsilon:'Epsilon (start→end)',
+  },
+  about:{
+    title:'About & Settings',subtitle:'Project info, language, accessibility',
+    langLabel:'Language',english:'English',hindi:'Hindi (हिंदी)',
+    aboutTitle:'About LifeGuardian AI',
+    aboutDesc:'LifeGuardian AI is a college minor project (Prompt 3 complete) demonstrating intelligent emergency detection for elderly people using ML risk classification, a rule-based AI response engine, Q-learning simulation, emergency scenario simulation, and full bilingual support.',
+    limTitle:'Prototype Limitations',
+    lims:['All activity data is simulated — no real sensors or hardware','Training data is synthetic — labels are demonstration rules, not clinical criteria','No real emergency alerts, SMS, calls, or notifications are sent','Risk predictions are illustrative — not clinically validated','Do not use this for real medical decisions'],
+    techTitle:'Technology Stack',version:'Version',course:'College Minor Project',
+    textSize:'Text Size',normal:'Normal',large:'Large',
+  },
+},
+hi:{
+  appName:'लाइफगार्डियन AI',
+  proto:'प्रोटोटाइप — केवल अनुकरणीय डेटा। वास्तविक सेंसर, चिकित्सा उपकरण या आपातकालीन सेवाओं से कोई संबंध नहीं।',
+  sysActive:'सिस्टम सक्रिय',modelReady:'ML मॉडल तैयार',modelNotReady:'मॉडल लोड नहीं',
+  nav:{dashboard:'डैशबोर्ड',activity:'गतिविधि मॉनीटर',risk:'जोखिम विश्लेषण',ai:'AI प्रतिक्रिया',emergency:'आपातकाल सिम्युलेशन',history:'घटना इतिहास',lab:'लर्निंग लैब',about:'परिचय व सेटिंग्स'},
+  dash:{
+    title:'डैशबोर्ड',greeting:'स्वागत है',subtitle:'वास्तविक समय में अनुकरणीय गतिविधि की निगरानी',
+    safeStatus:'सब ठीक',cautionStatus:'सावधानी',alertStatus:'सतर्क',
+    totalEvents:'कुल घटनाएँ',riskLevel:'जोखिम स्तर',activityState:'गतिविधि अवस्था',unreadNotifs:'अपठित अलर्ट',
+    breakdown:'कम / मध्यम / अधिक',trend:'गतिविधि प्रवृत्ति (24 घंटे)',riskBreakdown:'जोखिम विवरण',
+    recentEvents:'हाल की घटनाएँ',noEvents:'अभी तक कोई घटना नहीं',noEventsDesc:'परिदृश्य चलाएँ या गतिविधि मॉनीटर का उपयोग करें',
+    goMonitor:'गतिविधि मॉनीटर खोलें',viewHistory:'इतिहास देखें',simulate:'परिदृश्य चलाएँ',openLab:'लर्निंग लैब खोलें',
+    time:'समय',activity:'गतिविधि',intensity:'तीव्रता',risk:'जोखिम',source:'स्रोत',
+    low:'कम',medium:'मध्यम',high:'अधिक',
+    walking:'चलना',sitting:'बैठना',lyingDown:'लेटना',inactive:'निष्क्रिय',
+    mlPowered:'ML-संचालित',mlModel:'ML मॉडल',heuristic:'अनुमानी',
+    notifications:'सूचनाएँ',lastScenario:'अंतिम परिदृश्य',noNotifs:'कोई सूचना नहीं',
+  },
+  act:{
+    title:'गतिविधि मॉनीटर',subtitle:'गतिविधि पैटर्न का अनुकरण और ML जोखिम अनुमान प्राप्त करें',
+    selectState:'गतिविधि अवस्था',stateHint:'अनुकरणीय गतिविधि अवस्था चुनें',
+    walking:'चलना',sitting:'बैठना',lyingDown:'लेटना',inactive:'निष्क्रिय',
+    inactDur:'निष्क्रियता अवधि',durHint:'निष्क्रियता की अवधि (मिनट में)',
+    min:'मिनट',intensity:'हलचल तीव्रता',intHint:'सापेक्षिक हलचल (0=स्थिर, 100=जोरदार)',
+    low:'कम',high:'अधिक',scenarios:'त्वरित परिदृश्य',scenHint:'पूर्वनिर्धारित परिदृश्य चुनें',
+    sNormal:'सामान्य गतिविधि',sInact:'असामान्य निष्क्रियता',sFall:'संभावित गिरावट',
+    sNormalDesc:'नियमित दैनिक हलचल',sInactDesc:'लंबे समय तक बिना हलचल',sFallDesc:'अचानक तेज़ हलचल फिर लंबी स्थिरता',
+    analyze:'ML से विश्लेषण करें',reset:'रीसेट',analyzing:'ML अनुमान चल रहा है…',
+    resultTitle:'ML अनुमान',disclaimer:'केवल प्रदर्शनात्मक — अनुकरणीय डेटा',
+    noResult:'इनपुट सेट करें और विश्लेषण करें पर क्लिक करें',
+    rLow:'कम जोखिम',rMed:'मध्यम जोखिम',rHigh:'अधिक जोखिम',
+    state:'अवस्था',dur:'अवधि',int:'तीव्रता',scen:'परिदृश्य',hour:'घंटा',
+    timelineTitle:'अनुकरणीय गतिविधि टाइमलाइन',timelineDesc:'वर्तमान इनपुट का दृश्य प्रतिनिधित्व',
+    probTitle:'वर्ग संभावनाएँ',probNote:'प्रदर्शनात्मक संभावनाएँ — चिकित्सा संभावनाएँ नहीं',
+  },
+  risk:{
+    title:'जोखिम विश्लेषण',subtitle:'ML मॉडल प्रदर्शन, मेट्रिक्स और लाइव अनुमान',
+    modelInfo:'मॉडल जानकारी',modelType:'मॉडल प्रकार',features:'इनपुट फीचर',
+    trainData:'प्रशिक्षण डेटा',status:'स्थिति',ready:'तैयार',notReady:'तैयार नहीं',
+    metricsTitle:'होल्ड-आउट टेस्ट मेट्रिक्स',metricsNote:'प्रशिक्षण में उपयोग नहीं किए गए 20% टेस्ट सेट पर गणना।',
+    syntheticWarning:'ये मेट्रिक्स दर्शाते हैं कि मॉडल ने अनुकरणीय लेबलिंग नियम कितनी अच्छी तरह सीखे। ये वास्तविक गिरावट पहचान की मान्य सटीकता नहीं दर्शाते।',
+    accuracy:'सटीकता',precision:'परिशुद्धता (भारित)',recall:'रिकॉल (भारित)',f1:'F1-स्कोर (भारित)',
+    perClass:'प्रति-वर्ग मेट्रिक्स',classLow:'कम',classMed:'मध्यम',classHigh:'अधिक',
+    confMatrix:'कन्फ्यूजन मैट्रिक्स',predicted:'अनुमानित',actual:'वास्तविक',
+    trainSamples:'प्रशिक्षण नमूने',testSamples:'टेस्ट नमूने',nEstimators:'पेड़',
+    livePredict:'लाइव अनुमान परीक्षण',liveDesc:'लाइव ML अनुमान चलाने के लिए इनपुट दर्ज करें',
+    runPredict:'अनुमान चलाएँ',probabilities:'अनुमान संभावनाएँ',
+    modelDisclaimer:'यह मॉडल केवल अनुकरणीय डेटा पर प्रशिक्षित है। उच्च सटीकता का अर्थ है कि मॉडल ने लेबलिंग नियम सीखे।',
+    notReadyMsg:'मॉडल लोड नहीं हुआ। बैकएंड में `python ml/train.py` चलाएँ और सर्वर पुनः आरंभ करें।',
+  },
+  ai:{
+    title:'AI प्रतिक्रिया सहायक',subtitle:'नियम-आधारित प्रासंगिक प्रतिक्रिया — कोई बाहरी AI नहीं',
+    noLLM:'यह सहायक पूरी तरह नियम-आधारित है। कोई जनरेटिव AI, सशुल्क API या LLM उपयोग नहीं।',
+    runAnalyze:'पहले गतिविधि विश्लेषण करें',runAnalyzeDesc:'गतिविधि मॉनीटर पर जाएँ, इनपुट सेट करें और विश्लेषण करें पर क्लिक करें।',
+    headline:'प्रतिक्रिया शीर्षक',explanation:'व्याख्या',suggestion:'सुझाया गया कदम',
+    factors:'प्रभावशाली कारक',engineType:'इंजन',ruleBasedEngine:'नियम-आधारित प्रतिक्रिया इंजन',
+    lastPrediction:'अंतिम ML अनुमान के आधार पर',go:'गतिविधि मॉनीटर पर जाएँ',
+    disclaimer:'प्रोटोटाइप अस्वीकरण',refresh:'वर्तमान इनपुट से पुनः चलाएँ',
+  },
+  emerg:{
+    title:'आपातकाल सिम्युलेशन',subtitle:'ML अनुमान के साथ पूर्वनिर्धारित प्रदर्शन परिदृश्य चलाएँ',
+    selectScenario:'परिदृश्य चुनें',runBtn:'परिदृश्य चलाएँ',resetBtn:'रीसेट',running:'चल रहा है…',
+    steps:'अनुकरणीय सिस्टम चरण',result:'परिदृश्य परिणाम',response:'AI प्रतिक्रिया',
+    noResult:'ऊपर एक परिदृश्य चुनें और सिम्युलेशन शुरू करने के लिए चलाएँ पर क्लिक करें।',
+    simDisclaimer:'केवल अनुकरणीय परिदृश्य — कोई वास्तविक आपातकालीन सेवा से संपर्क नहीं किया गया।',
+    warningFall:'प्रदर्शनात्मक अनुकरण। कोई पुष्टि की हुई गिरावट नहीं हुई।',
+    notifCreated:'अनुकरणीय सूचना बनाई गई।',
+    normal:'सामान्य गतिविधि',unusual:'असामान्य निष्क्रियता',fall:'संभावित गिरावट परिदृश्य',highRisk:'उच्च-जोखिम प्रदर्शन',
+    normalDesc:'सामान्य दैनिक दिनचर्या — नियमित हलचल',unusualDesc:'लंबे समय तक कोई हलचल नहीं',
+    fallDesc:'अचानक तेज हलचल के बाद लंबी स्थिरता',highRiskDesc:'संयुक्त कारक: लंबी निष्क्रियता, न्यूनतम हलचल',
+  },
+  notif:{
+    title:'सूचनाएँ',subtitle:'परिदृश्य चलाने से उत्पन्न अनुकरणीय अलर्ट',
+    markRead:'पढ़ा हुआ चिह्नित करें',markAllRead:'सभी पढ़ा हुआ',dismiss:'हटाएँ',clearAll:'सभी साफ करें',
+    unread:'अपठित',noNotifs:'कोई सूचना नहीं',noNotifsDesc:'अनुकरणीय सूचनाएँ उत्पन्न करने के लिए कोई परिदृश्य चलाएँ।',
+    simNotice:'Simulated notification — no real alert was sent.',
+    simNoticeHi:'अनुकरणीय सूचना — कोई वास्तविक अलर्ट नहीं भेजा गया।',
+    high:'उच्च जोखिम',medium:'मध्यम जोखिम',low:'कम जोखिम',
+    goEmerg:'परिदृश्य चलाएँ',
+  },
+  hist:{
+    title:'घटना इतिहास',subtitle:'स्थानीय प्रदर्शन रिकॉर्ड — पुनरारंभ के बाद भी सुरक्षित',
+    filterType:'प्रकार से फ़िल्टर',filterRisk:'जोखिम से फ़िल्टर',allTypes:'सभी प्रकार',allRisks:'सभी जोखिम',
+    clearAll:'इतिहास साफ करें',confirmClear:'सभी घटना इतिहास साफ करें?',confirmClearBody:'यह सभी दर्ज प्रदर्शन घटनाओं को स्थायी रूप से हटा देगा।',
+    cancel:'रद्द करें',confirm:'सभी हटाएँ',
+    noEvents:'कोई घटना दर्ज नहीं',noEventsDesc:'गतिविधि मॉनीटर का उपयोग करने या आपातकालीन परिदृश्य चलाने पर घटनाएँ दर्ज होती हैं।',
+    time:'समय',category:'श्रेणी',activity:'गतिविधि',risk:'जोखिम',source:'स्रोत',notes:'नोट्स',
+    catActivity:'गतिविधि विश्लेषण',catScenario:'परिदृश्य रन',catQLab:'Q-लर्निंग',
+    total:'कुल घटनाएँ',showing:'दिखाया जा रहा है',
+  },
+  lab:{
+    title:'लर्निंग लैब',subtitle:'शैक्षणिक Q-लर्निंग प्रदर्शन — स्थानीय रूप से चलता है',
+    intro:'Q-लर्निंग एक रिइन्फोर्समेंट-लर्निंग एल्गोरिदम है। एजेंट पुरस्कार और दंड प्राप्त करके प्रत्येक स्थिति में सर्वोत्तम कार्रवाई सीखता है।',
+    states:'अवस्थाएँ (स्थिति)',actions:'कार्रवाइयाँ (विकल्प)',rewards:'पुरस्कार और दंड',
+    stateDesc:'वर्तमान अवलोकित स्थिति।',actionDesc:'सिस्टम क्या कर सकता है।',
+    rewardDesc:'फीडबैक संकेत जो एजेंट को सिखाता है।',
+    episodes:'प्रशिक्षण एपिसोड',train:'एजेंट प्रशिक्षित करें',training:'प्रशिक्षण…',reset:'रीसेट',
+    rewardChart:'प्रति एपिसोड संचयी पुरस्कार',qTable:'सीखी गई Q-तालिका (सर्वोत्तम कार्रवाई)',
+    agentDemo:'एजेंट कार्रवाई प्रदर्शन',selectState:'एक अवस्था चुनें',bestAction:'सर्वोत्तम सीखी गई कार्रवाई',
+    notTrained:'एजेंट अभी प्रशिक्षित नहीं। शुरू करने के लिए एजेंट प्रशिक्षित करें पर क्लिक करें।',
+    trained:'एजेंट प्रशिक्षित!',finalReward:'अंतिम औसत पुरस्कार',seed:'रैंडम सीड',
+    disclaimer:'यह एक शैक्षणिक अनुकरण है। एजेंट वास्तविक दुनिया की कार्रवाई नहीं करता या वास्तविक अलर्ट नहीं भेजता।',
+    stateLabel:'अवस्था',riskLabel:'जोखिम',idealLabel:'आदर्श',learnedLabel:'सीखा',correctLabel:'सही',
+    hyperparams:'हाइपरपैरामीटर',alpha:'लर्निंग रेट',gamma:'डिस्काउंट फैक्टर',epsilon:'एप्सिलन (शुरू→अंत)',
+  },
+  about:{
+    title:'परिचय व सेटिंग्स',subtitle:'प्रोजेक्ट जानकारी, भाषा, सुलभता',
+    langLabel:'भाषा',english:'English',hindi:'हिंदी',
+    aboutTitle:'लाइफगार्डियन AI के बारे में',
+    aboutDesc:'लाइफगार्डियन AI एक कॉलेज माइनर प्रोजेक्ट है (प्रॉम्प्ट 3 पूर्ण)। इसमें ML जोखिम वर्गीकरण, नियम-आधारित AI प्रतिक्रिया इंजन, Q-लर्निंग सिम्युलेशन, आपातकालीन परिदृश्य सिम्युलेशन, और पूर्ण द्विभाषी समर्थन शामिल है।',
+    limTitle:'प्रोटोटाइप की सीमाएँ',
+    lims:['सभी गतिविधि डेटा अनुकरणीय है — कोई वास्तविक हार्डवेयर नहीं','प्रशिक्षण डेटा अनुकरणीय है — लेबल प्रदर्शन नियम हैं','कोई वास्तविक आपातकालीन अलर्ट, SMS या कॉल नहीं','जोखिम अनुमान प्रदर्शनात्मक हैं — चिकित्सकीय रूप से मान्य नहीं','वास्तविक चिकित्सा निर्णयों के लिए उपयोग न करें'],
+    techTitle:'तकनीकी स्टैक',version:'संस्करण',course:'कॉलेज माइनर प्रोजेक्ट',
+    textSize:'टेक्स्ट आकार',normal:'सामान्य',large:'बड़ा',
+  },
+},
+};
+
+// ═══════════════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════════════
+let lang = 'en';
+let page = 'dashboard';
+let t = T.en;
+let modelReady = false;
+let unreadCount = 0;
+
+let actState = {activity:'sitting',duration:5,intensity:50,scenario:'normal',lastResult:null,lastAssistant:null};
+let emergState = {selectedId:null,running:false,result:null};
+let labState = {trained:false,data:null,episodes:500,seed:42};
+let _confirmCb = null;
+let textLarge = false;
+
+// ═══════════════════════════════════════════════════════════
+// ICONS
+// ═══════════════════════════════════════════════════════════
+const ICONS = {
+  dashboard:'<rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>',
+  activity: '<polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>',
+  chart:    '<line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>',
+  cpu:      '<rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><line x1="9" y1="2" x2="9" y2="4"/><line x1="15" y1="2" x2="15" y2="4"/><line x1="9" y1="20" x2="9" y2="22"/><line x1="15" y1="20" x2="15" y2="22"/><line x1="2" y1="9" x2="4" y2="9"/><line x1="2" y1="15" x2="4" y2="15"/><line x1="20" y1="9" x2="22" y2="9"/><line x1="20" y1="15" x2="22" y2="15"/>',
+  alert:    '<path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>',
+  history:  '<polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/>',
+  flask:    '<path d="M9 2v7.1L4.72 20H19.28L15 9.1V2"/><line x1="9" y1="2" x2="15" y2="2"/>',
+  info:     '<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>',
+  shield:   '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/>',
+  user:     '<path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/>',
+  clock:    '<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>',
+  minus:    '<line x1="5" y1="12" x2="19" y2="12"/>',
+  check:    '<path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>',
+  refresh:  '<polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/>',
+  zap:      '<polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>',
+  layers:   '<polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/>',
+  trending: '<polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/>',
+  globe:    '<circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/>',
+  sun:      '<circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>',
+  heart:    '<path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/>',
+  play:     '<polygon points="5 3 19 12 5 21 5 3"/>',
+  loader:   '<line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="4.93" y1="4.93" x2="7.76" y2="7.76"/><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/><line x1="4.93" y1="19.07" x2="7.76" y2="16.24"/><line x1="16.24" y1="7.76" x2="19.07" y2="4.93"/>',
+  xc:       '<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>',
+  settings: '<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/>',
+  bell:     '<path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/>',
+  trash:    '<polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/>',
+  eye:      '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>',
+  book:     '<path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/>',
+  target:   '<circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>',
+  award:    '<circle cx="12" cy="8" r="6"/><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/>',
+  filter:   '<polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>',
+};
+function icon(k,sz=16,col='currentColor',sw=1.9){
+  return `<svg width="${sz}" height="${sz}" viewBox="0 0 24 24" fill="none" stroke="${col}" stroke-width="${sw}" stroke-linecap="round" stroke-linejoin="round">${ICONS[k]||ICONS.info}</svg>`;
+}
+
+// ═══════════════════════════════════════════════════════════
+// UTILS
+// ═══════════════════════════════════════════════════════════
+const riskCol=(r)=>r==='high'?'#ef4444':r==='medium'?'#f59e0b':'#22c55e';
+function riskBadge(r){
+  const lbl=r==='high'?t.dash.high:r==='medium'?t.dash.medium:t.dash.low;
+  return `<span class="badge badge-${r||'low'}">${lbl}</span>`;
+}
+function actLabel(a){
+  return {walking:t.dash.walking,sitting:t.dash.sitting,lying_down:t.dash.lyingDown,inactive:t.dash.inactive}[a]||a;
+}
+function catLabel(c){
+  return {activity_analysis:t.hist.catActivity,scenario_run:t.hist.catScenario,qlearn_train:t.hist.catQLab}[c]||c;
+}
+function fmtDate(iso){
+  if(!iso)return'—';
+  try{const d=new Date(iso);return d.toLocaleDateString([],{day:'2-digit',month:'short'})+' '+d.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});}
+  catch{return'—';}
+}
+function fmtRelative(iso){
+  if(!iso)return'';
+  try{
+    const diff=Date.now()-new Date(iso).getTime();
+    if(diff<60000)return lang==='hi'?'अभी':'just now';
+    if(diff<3600000)return lang==='hi'?`${Math.floor(diff/60000)} मिनट पहले`:`${Math.floor(diff/60000)}m ago`;
+    if(diff<86400000)return lang==='hi'?`${Math.floor(diff/3600000)} घंटे पहले`:`${Math.floor(diff/3600000)}h ago`;
+    return fmtDate(iso);
+  }catch{return'';}
+}
+async function api(path,opts={}){
+  const r=await fetch(path,{headers:{'Content-Type':'application/json'},...opts});
+  if(!r.ok)throw new Error(`API ${r.status}`);
+  return r.json();
+}
+const pct=(v)=>Math.round((v||0)*100)+'%';
+const clamp=(v,lo,hi)=>Math.max(lo,Math.min(hi,v));
+
+// ═══════════════════════════════════════════════════════════
+// TOAST
+// ═══════════════════════════════════════════════════════════
+let _toastTimer;
+function toast(msg,type='info'){
+  const bc={success:'#22c55e',warning:'#f59e0b',error:'#ef4444',info:'#3b82f6'};
+  const ic={success:'✓',warning:'!',error:'✗',info:'i'};
+  const el=document.getElementById('toast');
+  document.getElementById('toast-msg').textContent=msg;
+  document.getElementById('toast-icon').textContent=ic[type]||'i';
+  document.getElementById('toast-icon').style.color=bc[type];
+  el.style.borderLeft=`3px solid ${bc[type]}`;
+  el.classList.add('toast-show');
+  clearTimeout(_toastTimer);
+  _toastTimer=setTimeout(hideToast,4500);
+}
+function hideToast(){document.getElementById('toast').classList.remove('toast-show');}
+
+// ═══════════════════════════════════════════════════════════
+// CONFIRM DIALOG
+// ═══════════════════════════════════════════════════════════
+function showConfirm(title,body,okLabel,cb){
+  document.getElementById('confirm-title').textContent=title;
+  document.getElementById('confirm-body').textContent=body;
+  document.getElementById('confirm-ok-btn').textContent=okLabel;
+  document.getElementById('confirm-cancel-btn').textContent=t.hist.cancel;
+  _confirmCb=cb;
+  document.getElementById('confirm-overlay').classList.add('show');
+}
+function confirmOk(){document.getElementById('confirm-overlay').classList.remove('show');if(_confirmCb)_confirmCb();}
+function confirmCancel(){document.getElementById('confirm-overlay').classList.remove('show');}
+
+// ═══════════════════════════════════════════════════════════
+// NAVIGATION
+// ═══════════════════════════════════════════════════════════
+function nav(p){page=p;render();window.scrollTo(0,0);closeMobile();}
+function openMobile(){document.getElementById('sidebar').classList.add('open');document.getElementById('overlay').style.display='block';}
+function closeMobile(){document.getElementById('sidebar').classList.remove('open');document.getElementById('overlay').style.display='';}
+
+function buildNav(){
+  const n=t.nav;
+  const items=[
+    {id:'dashboard',icon:'dashboard',label:n.dashboard},
+    {id:'activity', icon:'activity', label:n.activity},
+    {id:'risk',     icon:'chart',    label:n.risk},
+    {id:'ai',       icon:'cpu',      label:n.ai},
+    {id:'emergency',icon:'alert',    label:n.emergency},
+    {id:'history',  icon:'history',  label:n.history},
+    {id:'lab',      icon:'flask',    label:n.lab},
+    {id:'about',    icon:'settings', label:n.about},
+  ];
+  document.getElementById('nav-items').innerHTML=items.map(it=>{
+    const badge=(it.id==='history'&&unreadCount>0)?`<span class="nav-badge red">${unreadCount}</span>`:'';
+    return`<button class="nav-btn${page===it.id?' active':''}" onclick="nav('${it.id}')" aria-current="${page===it.id?'page':'false'}">
+      ${icon(it.icon,14)} <span style="flex:1;overflow:hidden;text-overflow:ellipsis">${it.label}</span>${badge}
+    </button>`;
+  }).join('');
+  document.getElementById('sb-appname').textContent=t.appName;
+  document.getElementById('mob-appname').textContent=t.appName;
+  document.getElementById('sb-sys').textContent=t.sysActive;
+  const pbt=document.getElementById('proto-banner-text');
+  if(pbt)pbt.textContent=t.proto;
+  document.getElementById('sb-model-dot').style.background=modelReady?'#22c55e':'#f59e0b';
+  document.getElementById('sb-model-txt').textContent=modelReady?t.modelReady:t.modelNotReady;
+  // Sync language bar
+  const lbLabel=document.getElementById('lb-label');
+  if(lbLabel)lbLabel.textContent=lang==='hi'?'भाषा':'Language';
+  const lbEn=document.getElementById('lb-en');const lbHi=document.getElementById('lb-hi');
+  if(lbEn){lbEn.classList.toggle('active',lang==='en');}
+  if(lbHi){lbHi.classList.toggle('active',lang==='hi');}
+  const lbDot=document.getElementById('lb-model-dot');const lbTxt=document.getElementById('lb-model-txt');
+  if(lbDot)lbDot.style.background=modelReady?'#22c55e':'#f59e0b';
+  if(lbTxt)lbTxt.textContent=modelReady?(lang==='hi'?'ML तैयार':'ML Ready'):(lang==='hi'?'मॉडल नहीं':'No model');
+  // Mobile bottom nav
+  const mbl=document.querySelectorAll('#mob-bar .mob-nav-btn');
+  const mpages=['dashboard','activity','emergency','history','about'];
+  const mlbls=[n.dashboard,lang==='hi'?'गतिविधि':'Activity',lang==='hi'?'सिम्युलेशन':'Sim',lang==='hi'?'इतिहास':'History',lang==='hi'?'सेटिंग्स':'Settings'];
+  mbl.forEach((b,i)=>{b.querySelector('span').textContent=mlbls[i]||'';b.classList.toggle('active',mpages[i]===page);});
+}
+
+// ═══════════════════════════════════════════════════════════
+// PAGE: DASHBOARD
+// ═══════════════════════════════════════════════════════════
+async function pageDashboard(){
+  const area=document.getElementById('page-area');
+  area.innerHTML=`<div class="page-in">
+    <div class="hero">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:14px">
+        <div>
+          <div style="font-size:11px;color:rgba(255,255,255,.55);text-transform:uppercase;letter-spacing:.1em;font-weight:600;margin-bottom:4px">${t.dash.greeting}</div>
+          <h1 style="font-size:22px;font-weight:800;color:#fff;margin-bottom:6px">${t.dash.title}</h1>
+          <p style="font-size:13px;color:rgba(255,255,255,.6);max-width:340px;line-height:1.55">${t.dash.subtitle}</p>
+          ${modelReady?`<span class="badge" style="background:rgba(255,255,255,.12);color:#7dd3fc;margin-top:8px;display:inline-flex;gap:5px">${icon('zap',11,'#7dd3fc')} ${t.dash.mlPowered}</span>`:''}
+        </div>
+        <div id="hero-status"></div>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap">
+        <button class="btn btn-teal btn-sm" onclick="nav('emergency')" style="flex-shrink:0">${icon('play',13,'#fff')} ${t.dash.simulate}</button>
+        <button onclick="nav('history')" class="btn btn-sm" style="background:rgba(255,255,255,.1);color:#fff;border:1.5px solid rgba(255,255,255,.2);flex-shrink:0">${icon('history',13,'#fff')} ${t.dash.viewHistory}</button>
+        <button onclick="nav('lab')" class="btn btn-sm" style="background:rgba(255,255,255,.1);color:#fff;border:1.5px solid rgba(255,255,255,.2);flex-shrink:0">${icon('flask',13,'#fff')} ${t.dash.openLab}</button>
+      </div>
+    </div>
+    <div class="kpi-grid" id="kpi-row">${[0,1,2,3].map(()=>`<div class="kpi-card" style="background:#f8fafc;min-height:82px"></div>`).join('')}</div>
+    <div class="grid2" style="margin-bottom:14px">
+      <div class="card">
+        <div style="font-weight:700;font-size:13px;color:#0f172a;margin-bottom:12px">${t.dash.trend}</div>
+        <div id="trend-chart" style="height:120px;display:flex;align-items:flex-end;gap:2px"></div>
+        <div style="display:flex;justify-content:space-between;font-size:9px;color:#94a3b8;margin-top:5px"><span>00:00</span><span>06:00</span><span>12:00</span><span>18:00</span><span>24:00</span></div>
+      </div>
+      <div class="card">
+        <div style="font-weight:700;font-size:13px;color:#0f172a;margin-bottom:12px">${t.dash.riskBreakdown}</div>
+        <div id="risk-donut"></div>
+      </div>
+    </div>
+    <div class="card">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px">
+        <div style="font-weight:700;font-size:13px;color:#0f172a">${t.dash.recentEvents}</div>
+        <button class="btn btn-outline btn-sm" onclick="nav('history')">${t.dash.viewHistory}</button>
+      </div>
+      <div id="events-table"></div>
+    </div>
+  </div>`;
+  try{
+    const stats=await api('/api/stats/summary');
+    modelReady=stats.model_ready||false;
+    unreadCount=stats.unread_notifications||0;
+    buildNav();
+    renderHeroStatus(stats.current_status);
+    renderKpiRow(stats);
+    renderTrendChart(stats.activity_timeline||[]);
+    renderRiskDonut(stats.risk_counts);
+    renderEventsTable(stats.recent_events||[]);
+  }catch(e){
+    document.getElementById('hero-status').innerHTML=`<div style="color:rgba(255,255,255,.4);font-size:11px">API unavailable</div>`;
+    document.getElementById('kpi-row').innerHTML=`<div style="grid-column:1/-1;color:#f59e0b;font-size:13px;padding:8px">Could not reach backend. Is the server running at http://localhost:8000?</div>`;
+  }
+}
+function renderHeroStatus(cs){
+  const col=riskCol(cs.risk);
+  const gc=cs.risk==='high'?'glow-r':cs.risk==='medium'?'glow-a':'glow-g';
+  const label=cs.risk==='low'?t.dash.safeStatus:cs.risk==='medium'?t.dash.cautionStatus:t.dash.alertStatus;
+  document.getElementById('hero-status').innerHTML=`
+    <div style="text-align:center">
+      <div style="position:relative;display:inline-flex;align-items:center;justify-content:center">
+        <div class="pulse-ring" style="position:absolute;width:64px;height:64px;border-radius:50%;background:radial-gradient(circle,${col}33 0%,transparent 70%)"></div>
+        <div class="${gc}" style="width:52px;height:52px;border-radius:50%;background:${col}22;border:2px solid ${col}55;display:flex;align-items:center;justify-content:center">${icon('shield',24,col)}</div>
+      </div>
+      <div style="margin-top:6px;font-size:12px;font-weight:700;color:${col}">${label}</div>
+      <div style="font-size:10px;color:rgba(255,255,255,.45);margin-top:1px">${t.dash.riskLevel}</div>
+    </div>`;
+}
+function renderKpiRow(stats){
+  const cs=stats.current_status;
+  const rLabel=cs.risk==='low'?t.dash.low:cs.risk==='medium'?t.dash.medium:t.dash.high;
+  const srcBadge=stats.model_ready?`<span class="model-source ml">${icon('zap',9,'#5b21b6',2)} ${t.dash.mlModel}</span>`:`<span class="model-source heuristic">${t.dash.heuristic}</span>`;
+  const kpis=[
+    {lbl:t.dash.totalEvents,   val:stats.total_events,                          ibg:'#eff6ff',icol:'#3b82f6',ik:'layers'},
+    {lbl:t.dash.riskLevel,     val:rLabel, sub:srcBadge,                        ibg:cs.risk==='low'?'#dcfce7':cs.risk==='medium'?'#fef3c7':'#fee2e2',icol:riskCol(cs.risk),ik:'shield'},
+    {lbl:t.dash.activityState, val:actLabel(cs.state),                          ibg:'#f0fdf4',icol:'#16a34a',ik:'activity'},
+    {lbl:t.dash.unreadNotifs,  val:stats.unread_notifications||0,               ibg:'#fef3c7',icol:'#d97706',ik:'bell'},
+  ];
+  document.getElementById('kpi-row').innerHTML=kpis.map(k=>`
+    <div class="kpi-card">
+      <div style="min-width:0;flex:1">
+        <div class="kpi-label">${k.lbl}</div>
+        <div class="kpi-val">${k.val}</div>
+        ${k.sub?`<div class="kpi-sub" style="margin-top:5px">${k.sub}</div>`:''}
+      </div>
+      <div class="kpi-icon" style="background:${k.ibg}">${icon(k.ik,20,k.icol)}</div>
+    </div>`).join('');
+}
+function renderTrendChart(data){
+  if(!data.length){document.getElementById('trend-chart').innerHTML=`<div style="color:#94a3b8;font-size:12px;align-self:center">No data</div>`;return;}
+  const max=Math.max(...data.map(d=>d.intensity),1);
+  document.getElementById('trend-chart').innerHTML=`<div class="bar-wrap" style="height:120px">`+data.map((d,i)=>{
+    const h=Math.round((d.intensity/max)*100);
+    return`<div class="bar-col" style="height:100%"><div class="bar-fill" style="height:${h}%;background:linear-gradient(to top,#0f172a99,#1e40af66);width:100%"></div><div class="bar-label">${i%6===0?d.hour:''}</div></div>`;
+  }).join('')+`</div>`;
+}
+function renderRiskDonut(counts){
+  const total=(counts.low||0)+(counts.medium||0)+(counts.high||0)||1;
+  const segs=[{v:counts.low||0,c:'#22c55e',l:t.dash.low},{v:counts.medium||0,c:'#f59e0b',l:t.dash.medium},{v:counts.high||0,c:'#ef4444',l:t.dash.high}];
+  const r=38,cx=50,cy=50,sw=12,circ=2*Math.PI*r;
+  let off=0;
+  const arcs=segs.map(s=>{const dash=(s.v/total)*circ;const arc=`<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${s.c}" stroke-width="${sw}" stroke-dasharray="${dash} ${circ-dash}" stroke-dashoffset="${-off}" style="transform-origin:${cx}px ${cy}px;transform:rotate(-90deg)"/>`;off+=dash;return arc;}).join('');
+  const legend=segs.map(s=>`<div style="display:flex;align-items:center;justify-content:space-between;font-size:12px;padding:3px 0"><div style="display:flex;align-items:center;gap:6px"><div style="width:8px;height:8px;border-radius:50%;background:${s.c}"></div><span style="color:#64748b">${s.l}</span></div><span style="font-weight:700;color:#0f172a">${s.v}</span></div>`).join('');
+  document.getElementById('risk-donut').innerHTML=`<div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap"><div style="position:relative;flex-shrink:0"><svg width="100" height="100" viewBox="0 0 100 100">${arcs}<circle cx="${cx}" cy="${cy}" r="${r-sw/2-1}" fill="white"/></svg><div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center"><div style="font-size:18px;font-weight:800;color:#0f172a">${(counts.low||0)+(counts.medium||0)+(counts.high||0)}</div><div style="font-size:9.5px;color:#94a3b8">total</div></div></div><div style="flex:1;min-width:80px">${legend}</div></div>`;
+}
+function renderEventsTable(events){
+  if(!events.length){
+    document.getElementById('events-table').innerHTML=`<div style="padding:28px 0;text-align:center"><div style="opacity:.3;margin-bottom:8px">${icon('layers',32,'#94a3b8')}</div><div style="font-size:14px;font-weight:600;color:#94a3b8;margin-bottom:5px">${t.dash.noEvents}</div><div style="font-size:12px;color:#cbd5e1;margin-bottom:14px">${t.dash.noEventsDesc}</div><button class="btn btn-primary btn-sm" onclick="nav('emergency')">${t.dash.simulate}</button></div>`;return;
+  }
+  const srcBadge=(src)=>src==='ml_model'?`<span class="model-source ml">ML</span>`:`<span class="model-source heuristic">rule</span>`;
+  document.getElementById('events-table').innerHTML=`<div style="overflow-x:auto"><table><thead><tr><th>${t.dash.time}</th><th>${t.dash.activity}</th><th>${t.dash.intensity}</th><th>${t.dash.risk}</th><th>${t.dash.source}</th></tr></thead><tbody>${events.map(ev=>`<tr><td style="color:#64748b;font-size:11.5px;white-space:nowrap">${fmtDate(ev.timestamp)}</td><td style="font-weight:600">${actLabel(ev.activity_state)}</td><td>${ev.movement_intensity||0}</td><td>${riskBadge(ev.simulated_risk)}</td><td>${srcBadge(ev.prediction_source)}</td></tr>`).join('')}</tbody></table></div>`;
+}
+
+// ═══════════════════════════════════════════════════════════
+// PAGE: ACTIVITY MONITOR
+// ═══════════════════════════════════════════════════════════
+function pageActivity(){
+  const ta=t.act;
+  const scenarios=[
+    {id:'normal',             risk:'low',   icon:'activity',name:ta.sNormal, desc:ta.sNormalDesc,  activity:'walking',    dur:5,  int:65},
+    {id:'unusual_inactivity', risk:'medium',icon:'clock',   name:ta.sInact,  desc:ta.sInactDesc,   activity:'inactive',   dur:45, int:5},
+    {id:'possible_fall',      risk:'high',  icon:'alert',   name:ta.sFall,   desc:ta.sFallDesc,    activity:'lying_down', dur:20, int:8},
+  ];
+  const actBtns=[{id:'walking',icon:'activity',label:ta.walking},{id:'sitting',icon:'user',label:ta.sitting},{id:'lying_down',icon:'minus',label:ta.lyingDown},{id:'inactive',icon:'clock',label:ta.inactive}];
+  document.getElementById('page-area').innerHTML=`<div class="page-in">
+    <div class="sec-hdr"><div class="sec-icon" style="background:linear-gradient(135deg,#0d9488,#14b8a6)">${icon('activity',18,'#fff')}</div><div><div class="sec-title">${ta.title}</div><div class="sec-sub">${ta.subtitle}</div></div></div>
+    <div class="grid2">
+      <div class="flex-col">
+        <div class="card">
+          <div class="field-label" style="margin-bottom:2px">${ta.selectState}</div>
+          <div class="field-hint">${ta.stateHint}</div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap">${actBtns.map(b=>`<button class="act-btn${actState.activity===b.id?' sel':''}" onclick="setActivity('${b.id}')">${icon(b.icon,17)} <span>${b.label}</span></button>`).join('')}</div>
+        </div>
+        <div class="card">
+          <div style="margin-bottom:16px">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px"><div class="field-label">${ta.inactDur}</div><div style="display:flex;align-items:center;gap:5px"><span class="field-val" id="dur-val">${actState.duration}</span><span style="font-size:11px;color:#94a3b8">${ta.min}</span></div></div>
+            <div class="field-hint">${ta.durHint}</div>
+            <input type="range" min="0" max="120" step="5" value="${actState.duration}" id="dur-slider" oninput="setDur(this.value)"/>
+            <div style="display:flex;justify-content:space-between;font-size:9.5px;color:#cbd5e1;margin-top:3px"><span>0</span><span>30</span><span>60</span><span>90</span><span>120</span></div>
+          </div>
+          <div>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px"><div class="field-label">${ta.intensity}</div><span class="field-val" id="int-val">${actState.intensity}</span></div>
+            <div class="field-hint">${ta.intHint}</div>
+            <input type="range" min="0" max="100" step="1" value="${actState.intensity}" id="int-slider" class="teal" oninput="setInt(this.value)"/>
+            <div style="display:flex;justify-content:space-between;font-size:9.5px;color:#cbd5e1;margin-top:3px"><span>${ta.low}</span><span style="color:#f59e0b">50</span><span>${ta.high}</span></div>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-primary" id="analyze-btn" onclick="analyzeActivity()" style="flex:1;justify-content:center">${icon('zap',14,'#fff')} ${ta.analyze}</button>
+          <button class="btn btn-outline" onclick="resetActivity()" title="${ta.reset}">${icon('refresh',14)} ${ta.reset}</button>
+        </div>
+      </div>
+      <div class="flex-col">
+        <div class="card">
+          <div class="field-label" style="margin-bottom:2px">${ta.scenarios}</div>
+          <div class="field-hint">${ta.scenHint}</div>
+          <div style="display:flex;flex-direction:column;gap:7px">
+            ${scenarios.map(s=>{const bgMap={low:'#dcfce7',medium:'#fef3c7',high:'#fee2e2'};const selCls=actState.scenario===s.id?` sel-${s.risk==='medium'?'med':s.risk}`:'';return`<div class="sc-card${selCls}" onclick="setScenario('${s.id}','${s.activity}',${s.dur},${s.int})"><div style="width:32px;height:32px;min-width:32px;border-radius:7px;background:${bgMap[s.risk]};display:flex;align-items:center;justify-content:center">${icon(s.icon,15,riskCol(s.risk))}</div><div style="flex:1;min-width:0"><div style="font-weight:700;font-size:12.5px;color:#0f172a;margin-bottom:1px">${s.name}</div><div style="font-size:11px;color:#64748b">${s.desc}</div></div><span class="badge badge-${s.risk}" style="font-size:9.5px;flex-shrink:0">${s.risk==='low'?ta.low:s.risk==='medium'?t.dash.medium:t.dash.high}</span></div>`;}).join('')}
+          </div>
+        </div>
+        <div class="card" id="result-card">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px"><div style="font-weight:700;font-size:13px;color:#0f172a">${ta.resultTitle}</div>${modelReady?`<span class="model-source ml">${icon('zap',10,'#5b21b6',2)} ML</span>`:''}</div>
+          <div id="result-body"><div style="padding:16px 0;text-align:center"><div style="opacity:.3;margin-bottom:8px">${icon('zap',28,'#94a3b8')}</div><div style="font-size:12px;color:#94a3b8;line-height:1.6">${ta.noResult}</div></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="card" style="margin-top:14px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:6px">
+        <div><div class="field-label" style="margin-bottom:1px">${ta.timelineTitle}</div><div style="font-size:11px;color:#94a3b8">${ta.timelineDesc}</div></div>
+        <div id="act-summary" style="display:flex;gap:7px;flex-wrap:wrap"></div>
+      </div>
+      <div class="timeline" id="act-timeline"></div>
+      <div style="display:flex;justify-content:space-between;font-size:9px;color:#94a3b8;margin-top:4px"><span>00:00</span><span>06:00</span><span>12:00</span><span>18:00</span><span>24:00</span></div>
+    </div>
+  </div>`;
+  updateTimeline();updateSummary();
+  if(actState.lastResult)renderResult(actState.lastResult);
+}
+function setActivity(id){actState.activity=id;actState.scenario='';pageActivity();}
+function setDur(v){actState.duration=+v;const e=document.getElementById('dur-val');if(e)e.textContent=v;updateTimeline();updateSummary();}
+function setInt(v){actState.intensity=+v;const e=document.getElementById('int-val');if(e)e.textContent=v;updateTimeline();updateSummary();}
+function setScenario(id,activity,dur,intensity){actState.scenario=id;actState.activity=activity;actState.duration=dur;actState.intensity=intensity;pageActivity();}
+function resetActivity(){actState={activity:'sitting',duration:5,intensity:50,scenario:'normal',lastResult:null,lastAssistant:null};pageActivity();}
+function updateTimeline(){
+  const el=document.getElementById('act-timeline');if(!el)return;
+  const colMap={walking:'#0d9488',sitting:'#3b82f6',lying_down:'#7c3aed',inactive:'#94a3b8'};
+  const col=colMap[actState.activity]||'#94a3b8';
+  const inactSlots=Math.min(22,Math.floor(actState.duration/5));
+  el.innerHTML=Array.from({length:24},(_,i)=>{
+    const isInact=(i>=(24-inactSlots-1))&&actState.activity==='inactive';
+    if(isInact)return`<div class="tl-bar" style="height:5%;background:#ef444455;flex:1"></div>`;
+    const jitter=Math.sin(i*2.1)*14+Math.cos(i*1.3)*9;
+    const h=clamp(actState.intensity+jitter,5,98);
+    return`<div class="tl-bar" style="height:${h}%;background:${col};opacity:${0.55+i/44};flex:1"></div>`;
+  }).join('');
+}
+function updateSummary(){
+  const el=document.getElementById('act-summary');if(!el)return;el.innerHTML='';
+  const ta=t.act;
+  [[ta.state,{walking:ta.walking,sitting:ta.sitting,lying_down:ta.lyingDown,inactive:ta.inactive}[actState.activity]||actState.activity,'#0f172a'],
+   [ta.dur,`${actState.duration} ${ta.min}`,'#64748b'],[ta.int,`${actState.intensity}/100`,'#0d9488']
+  ].forEach(([lbl,val,col])=>{const t=document.createElement('div');t.style.cssText='background:#f8fafc;border-radius:7px;padding:4px 10px;display:flex;align-items:center;gap:6px;font-size:11.5px';t.innerHTML=`<span style="color:#94a3b8">${lbl}:</span><span style="font-weight:700;color:${col}">${val}</span>`;el.appendChild(t);});
+}
+async function analyzeActivity(){
+  const btn=document.getElementById('analyze-btn');const ta=t.act;
+  if(btn){btn.disabled=true;btn.innerHTML=`${icon('loader',14,'#fff')} ${ta.analyzing}`;}
+  const hour=new Date().getHours();
+  try{
+    const res=await api('/api/activity/analyze',{method:'POST',body:JSON.stringify({activity_state:actState.activity,inactivity_duration:actState.duration,movement_intensity:actState.intensity,scenario:actState.scenario||'normal',hour_of_day:hour})});
+    actState.lastResult=res;modelReady=res.model_ready||modelReady;
+    renderResult(res);
+    const asst=await api('/api/assistant',{method:'POST',body:JSON.stringify({activity_state:actState.activity,inactivity_duration:actState.duration,movement_intensity:actState.intensity,ml_prediction:res.simulated_risk,hour_of_day:hour,lang})});
+    actState.lastAssistant=asst;
+    const rLbl=res.simulated_risk==='high'?ta.rHigh:res.simulated_risk==='medium'?ta.rMed:ta.rLow;
+    toast(`${ta.resultTitle}: ${rLbl}`,res.simulated_risk==='high'?'warning':res.simulated_risk==='medium'?'info':'success');
+    buildNav();
+  }catch(e){toast('API error — check backend is running','error');}
+  if(btn){btn.disabled=false;btn.innerHTML=`${icon('zap',14,'#fff')} ${ta.analyze}`;}
+}
+function renderResult(res){
+  const el=document.getElementById('result-body');if(!el)return;
+  const rc=document.getElementById('result-card');
+  const col=riskCol(res.simulated_risk);
+  if(rc)rc.style.border=`2px solid ${col}44`;
+  const ta=t.act;
+  const rLabel=res.simulated_risk==='high'?ta.rHigh:res.simulated_risk==='medium'?ta.rMed:ta.rLow;
+  const gc=res.simulated_risk==='high'?'glow-r':res.simulated_risk==='medium'?'glow-a':'glow-g';
+  const srcLabel=res.prediction_source==='ml_model'?`<span class="model-source ml">${icon('zap',9,'#5b21b6',2)} ML</span>`:`<span class="model-source heuristic">Rule</span>`;
+  let probBars='';
+  if(res.probabilities&&Object.keys(res.probabilities).length>0){
+    const pCols={low:'#22c55e',medium:'#f59e0b',high:'#ef4444'};
+    const pLbls={low:ta.rLow,medium:ta.rMed,high:ta.rHigh};
+    probBars=`<div style="margin-top:12px;padding-top:10px;border-top:1px solid #f1f5f9"><div style="font-size:11px;font-weight:600;color:#64748b;margin-bottom:8px;text-transform:uppercase;letter-spacing:.05em">${ta.probTitle}</div>${['low','medium','high'].map(cls=>{const pv=res.probabilities[cls]||0;return`<div style="display:flex;align-items:center;gap:8px;margin-bottom:5px;font-size:11.5px"><span style="width:68px;color:#64748b;flex-shrink:0">${pLbls[cls]}</span><div class="prob-bar-track"><div class="prob-bar-fill" style="width:${pct(pv)};background:${pCols[cls]}"></div></div><span style="width:36px;text-align:right;font-weight:700;color:${pCols[cls]}">${Math.round(pv*100)}%</span></div>`;}).join('')}<div style="font-size:10px;color:#94a3b8;margin-top:4px;font-style:italic">${ta.probNote}</div></div>`;
+  }
+  el.innerHTML=`<div style="display:flex;align-items:center;gap:10px;padding:11px 13px;border-radius:9px;background:${col}0d;margin-bottom:12px"><div class="${gc}" style="width:40px;height:40px;min-width:40px;border-radius:50%;background:${col}22;border:2px solid ${col}44;display:flex;align-items:center;justify-content:center">${icon(res.simulated_risk==='high'?'alert':res.simulated_risk==='medium'?'clock':'check',20,col)}</div><div><div style="font-size:16px;font-weight:800;color:${col}">${rLabel}</div><div style="font-size:10.5px;color:#94a3b8">${ta.disclaimer}</div></div><div style="margin-left:auto">${srcLabel}</div></div>${[[ta.state,{walking:ta.walking,sitting:ta.sitting,lying_down:ta.lyingDown,inactive:ta.inactive}[res.activity_state]||res.activity_state],[ta.dur,`${res.inactivity_duration} ${ta.min}`],[ta.int,`${res.movement_intensity}/100`]].map(([l,v])=>`<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid #f8fafc;font-size:12.5px"><span style="color:#64748b">${l}</span><span style="font-weight:700;color:#0f172a">${v}</span></div>`).join('')}${probBars}`;
+}
+
+// ═══════════════════════════════════════════════════════════
+// PAGE: RISK ANALYSIS
+// ═══════════════════════════════════════════════════════════
+async function pageRisk(){
+  const tr=t.risk;
+  document.getElementById('page-area').innerHTML=`<div class="page-in"><div class="sec-hdr"><div class="sec-icon" style="background:linear-gradient(135deg,#1d4ed8,#3b82f6)">${icon('chart',18,'#fff')}</div><div><div class="sec-title">${tr.title}</div><div class="sec-sub">${tr.subtitle}</div></div></div><div id="risk-content"><div style="color:#94a3b8;padding:20px 0;font-size:13px">Loading model info…</div></div></div>`;
+  try{
+    const info=await api('/api/model/info');
+    modelReady=info.model_ready;buildNav();renderRiskContent(info);
+  }catch(e){document.getElementById('risk-content').innerHTML=`<div style="color:#ef4444;font-size:13px">Could not load model info — is the backend running?</div>`;}
+}
+function renderRiskContent(info){
+  const tr=t.risk;const m=info.metrics;
+  if(!info.model_ready){
+    document.getElementById('risk-content').innerHTML=`<div class="card" style="border-left:3px solid #f59e0b;max-width:560px"><div style="display:flex;align-items:center;gap:9px;margin-bottom:8px;font-weight:700;color:#0f172a;font-size:13px">${icon('alert',16,'#f59e0b')} ${tr.notReady}</div><div style="font-size:13px;color:#64748b;line-height:1.65">${tr.notReadyMsg}</div></div>`;return;
+  }
+  const pcts=(v)=>Math.round((v||0)*100)+'%';
+  const cm=m?.confusion_matrix||[];const cmLabels=m?.confusion_labels||['low','medium','high'];
+  const labelMap={low:tr.classLow,medium:tr.classMed,high:tr.classHigh};
+  const cmRows=cm.map((row,i)=>`<tr><th style="text-align:right;font-weight:700;color:#475569;white-space:nowrap">${labelMap[cmLabels[i]]||cmLabels[i]}</th>${row.map((v,j)=>`<td class="${i===j?'cm-diagonal':''}">${v}</td>`).join('')}</tr>`).join('');
+  document.getElementById('risk-content').innerHTML=`
+    <div class="disclaimer-box" style="margin-bottom:16px;display:flex;align-items:flex-start;gap:8px">${icon('alert',14,'#92400e')} <span>${tr.syntheticWarning}</span></div>
+    <div class="grid2" style="margin-bottom:14px">
+      <div class="card">
+        <div style="font-weight:700;font-size:13px;color:#0f172a;margin-bottom:12px;display:flex;align-items:center;gap:7px">${icon('cpu',15,'#7c3aed')} ${tr.modelInfo}</div>
+        <div style="display:flex;flex-direction:column;gap:7px;font-size:12.5px">${[[tr.modelType,info.model_type],[tr.status,`<span class="badge badge-low">${tr.ready}</span>`],[tr.trainData,info.training_data],[tr.trainSamples,m?.train_samples||'—'],[tr.testSamples,m?.test_samples||'—'],[tr.nEstimators,m?.n_estimators||'—']].map(([l,v])=>`<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;padding:4px 0;border-bottom:1px solid #f8fafc"><span style="color:#64748b;flex-shrink:0">${l}</span><span style="font-weight:600;color:#0f172a;text-align:right">${v}</span></div>`).join('')}</div>
+        <div style="margin-top:10px"><div style="font-size:10.5px;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:.05em;margin-bottom:5px">Features</div><div style="display:flex;flex-wrap:wrap;gap:4px">${(info.features||[]).map(f=>`<span class="badge badge-blue" style="font-size:10px">${f}</span>`).join('')}</div></div>
+      </div>
+      <div class="card">
+        <div style="font-weight:700;font-size:13px;color:#0f172a;margin-bottom:4px;display:flex;align-items:center;gap:7px">${icon('trending',15,'#0d9488')} ${tr.metricsTitle}</div>
+        <div style="font-size:11px;color:#94a3b8;margin-bottom:12px">${tr.metricsNote}</div>
+        <div class="metric-grid">${[[tr.accuracy,m?.accuracy],[tr.precision,m?.precision_weighted],[tr.recall,m?.recall_weighted],[tr.f1,m?.f1_weighted]].map(([lbl,val])=>`<div class="metric-box"><div class="metric-num">${val!=null?pcts(val):'—'}</div><div class="metric-lbl">${lbl}</div></div>`).join('')}</div>
+      </div>
+    </div>
+    <div class="grid2" style="margin-bottom:14px">
+      <div class="card">
+        <div style="font-weight:700;font-size:13px;color:#0f172a;margin-bottom:12px;display:flex;align-items:center;gap:7px">${icon('layers',15,'#3b82f6')} ${tr.perClass}</div>
+        ${m?.per_class?Object.entries(m.per_class).map(([cls,vals])=>{const lbl=labelMap[cls]||cls;const col=riskCol(cls);return`<div style="margin-bottom:10px"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px"><span class="badge badge-${cls}">${lbl}</span><span style="font-size:11px;color:#94a3b8">${tr.testSamples}: ${vals.support}</span></div>${[['P',vals.precision,tr.precision.split(' ')[0]],['R',vals.recall,tr.recall.split(' ')[0]],['F1',vals.f1,'F1']].map(([k,v,label])=>`<div style="display:flex;align-items:center;gap:7px;margin-bottom:3px;font-size:11.5px"><span style="width:22px;color:#64748b;font-weight:600">${k}</span><div class="prob-bar-track"><div class="prob-bar-fill" style="width:${pcts(v)};background:${col}"></div></div><span style="width:36px;text-align:right;font-weight:700;color:${col}">${pcts(v)}</span></div>`).join('')}</div>`;}).join(''):'<div style="color:#94a3b8;font-size:12px">No per-class data</div>'}
+      </div>
+      <div class="card">
+        <div style="font-weight:700;font-size:13px;color:#0f172a;margin-bottom:6px;display:flex;align-items:center;gap:7px">${icon('layers',15,'#7c3aed')} ${tr.confMatrix}</div>
+        <div style="font-size:11px;color:#94a3b8;margin-bottom:10px">${tr.actual} (rows) vs ${tr.predicted} (cols)</div>
+        ${cm.length>0?`<div style="overflow-x:auto"><table class="cm-table"><thead><tr><th></th>${cmLabels.map(l=>`<th>${labelMap[l]||l}</th>`).join('')}</tr></thead><tbody>${cmRows}</tbody></table></div>`:'<div style="color:#94a3b8;font-size:12px">No confusion matrix data</div>'}
+      </div>
+    </div>
+    <div class="card">
+      <div style="font-weight:700;font-size:13px;color:#0f172a;margin-bottom:4px;display:flex;align-items:center;gap:7px">${icon('zap',15,'#f59e0b')} ${tr.livePredict}</div>
+      <div style="font-size:11.5px;color:#94a3b8;margin-bottom:14px">${tr.liveDesc}</div>
+      <div class="grid2">
+        <div>
+          <div style="margin-bottom:12px"><div class="field-label" style="margin-bottom:6px">${t.act.selectState}</div><div style="display:flex;gap:6px;flex-wrap:wrap">${[{id:'walking',label:t.act.walking},{id:'sitting',label:t.act.sitting},{id:'lying_down',label:t.act.lyingDown},{id:'inactive',label:t.act.inactive}].map(b=>`<button class="act-btn${actState.activity===b.id?' sel':''}" onclick="setRiskActivity('${b.id}')" style="min-width:55px">${b.label}</button>`).join('')}</div></div>
+          <div style="margin-bottom:10px"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px"><div class="field-label">${t.act.inactDur}</div><span class="field-val" id="rdur-val">${actState.duration}</span></div><input type="range" min="0" max="120" step="5" value="${actState.duration}" id="rdur-slider" oninput="setRiskDur(this.value)"/></div>
+          <div style="margin-bottom:12px"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px"><div class="field-label">${t.act.intensity}</div><span class="field-val" id="rint-val">${actState.intensity}</span></div><input type="range" min="0" max="100" step="1" value="${actState.intensity}" id="rint-slider" class="teal" oninput="setRiskInt(this.value)"/></div>
+          <button class="btn btn-primary" onclick="runLivePredict()" id="live-btn">${icon('zap',14,'#fff')} ${tr.runPredict}</button>
+        </div>
+        <div id="live-result"><div style="color:#94a3b8;font-size:12px;padding:12px 0">${tr.liveDesc}</div></div>
+      </div>
+      <div class="disclaimer-box" style="margin-top:14px">${tr.modelDisclaimer}</div>
+    </div>`;
+}
+function setRiskActivity(id){
+  actState.activity=id;
+  document.querySelectorAll('#page-area .act-btn').forEach(b=>{
+    const bid=b.getAttribute('onclick')?.match(/'([^']+)'/)?.[1];
+    if(bid)b.classList.toggle('sel',bid===id);
+  });
+  const rdur=document.getElementById('rdur-val');if(rdur)rdur.textContent=actState.duration;
+  const rint=document.getElementById('rint-val');if(rint)rint.textContent=actState.intensity;
+}
+function setRiskDur(v){actState.duration=+v;const e=document.getElementById('rdur-val');if(e)e.textContent=v;}
+function setRiskInt(v){actState.intensity=+v;const e=document.getElementById('rint-val');if(e)e.textContent=v;}
+async function runLivePredict(){
+  const btn=document.getElementById('live-btn');const tr=t.risk;const ta=t.act;
+  if(btn){btn.disabled=true;btn.innerHTML=`${icon('loader',14,'#fff')} Running…`;}
+  try{
+    const res=await api('/api/predict',{method:'POST',body:JSON.stringify({activity_state:actState.activity,inactivity_duration:actState.duration,movement_intensity:actState.intensity,hour_of_day:new Date().getHours()})});
+    const col=riskCol(res.prediction);const gc=res.prediction==='high'?'glow-r':res.prediction==='medium'?'glow-a':'glow-g';
+    const pCols={low:'#22c55e',medium:'#f59e0b',high:'#ef4444'};const pLbls={low:ta.rLow,medium:ta.rMed,high:ta.rHigh};
+    const rLbl=pLbls[res.prediction]||res.prediction;
+    const probBars=Object.keys(res.probabilities||{}).length>0?`<div style="margin-top:12px"><div style="font-size:11px;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:.05em;margin-bottom:7px">${tr.probabilities}</div>${['low','medium','high'].map(cls=>{const pv=res.probabilities[cls]||0;return`<div style="display:flex;align-items:center;gap:8px;margin-bottom:5px;font-size:11.5px"><span style="width:68px;color:#64748b">${pLbls[cls]}</span><div class="prob-bar-track"><div class="prob-bar-fill" style="width:${pct(pv)};background:${pCols[cls]}"></div></div><span style="font-weight:700;color:${pCols[cls]};width:32px;text-align:right">${Math.round(pv*100)}%</span></div>`;}).join('')}</div>`:''
+    document.getElementById('live-result').innerHTML=`<div style="padding:12px 14px;border-radius:9px;background:${col}0d;border:2px solid ${col}33"><div style="display:flex;align-items:center;gap:9px"><div class="${gc}" style="width:36px;height:36px;min-width:36px;border-radius:50%;background:${col}22;border:2px solid ${col}44;display:flex;align-items:center;justify-content:center">${icon(res.prediction==='high'?'alert':res.prediction==='medium'?'clock':'check',18,col)}</div><div><div style="font-size:16px;font-weight:800;color:${col}">${rLbl}</div><div style="font-size:10.5px;color:#94a3b8">${ta.disclaimer}</div></div></div>${probBars}</div>`;
+  }catch(e){document.getElementById('live-result').innerHTML=`<div style="color:#ef4444;font-size:12px">Error: ${e.message}</div>`;}
+  if(btn){btn.disabled=false;btn.innerHTML=`${icon('zap',14,'#fff')} ${tr.runPredict}`;}
+}
+
+// ═══════════════════════════════════════════════════════════
+// PAGE: AI RESPONSE ASSISTANT
+// ═══════════════════════════════════════════════════════════
+async function pageAI(){
+  const tai=t.ai;
+  document.getElementById('page-area').innerHTML=`<div class="page-in"><div class="sec-hdr"><div class="sec-icon" style="background:linear-gradient(135deg,#7c3aed,#8b5cf6)">${icon('cpu',18,'#fff')}</div><div><div class="sec-title">${tai.title}</div><div class="sec-sub">${tai.subtitle}</div></div></div><div style="display:flex;align-items:center;gap:9px;background:#f5f3ff;border:1px solid #ddd6fe;border-radius:10px;padding:10px 14px;margin-bottom:16px;font-size:12.5px;color:#5b21b6">${icon('cpu',15,'#7c3aed')} <span>${tai.noLLM}</span></div><div id="ai-content"></div></div>`;
+  if(!actState.lastResult){
+    document.getElementById('ai-content').innerHTML=`<div class="card" style="text-align:center;padding:32px 20px;max-width:480px;margin:0 auto"><div style="opacity:.3;margin-bottom:12px">${icon('cpu',36,'#94a3b8')}</div><div style="font-size:14px;font-weight:700;color:#0f172a;margin-bottom:6px">${tai.runAnalyze}</div><div style="font-size:13px;color:#64748b;line-height:1.65;margin-bottom:18px">${tai.runAnalyzeDesc}</div><button class="btn btn-primary" onclick="nav('activity')">${icon('activity',14,'#fff')} ${tai.go}</button></div>`;return;
+  }
+  if(actState.lastAssistant){renderAssistant(actState.lastAssistant,actState.lastResult);}
+  else{
+    document.getElementById('ai-content').innerHTML=`<div style="color:#94a3b8;font-size:13px">Loading assistant response…</div>`;
+    try{
+      const asst=await api('/api/assistant',{method:'POST',body:JSON.stringify({activity_state:actState.lastResult.activity_state,inactivity_duration:actState.lastResult.inactivity_duration,movement_intensity:actState.lastResult.movement_intensity,ml_prediction:actState.lastResult.simulated_risk,hour_of_day:actState.lastResult.hour_of_day||12,lang})});
+      actState.lastAssistant=asst;renderAssistant(asst,actState.lastResult);
+    }catch(e){document.getElementById('ai-content').innerHTML=`<div style="color:#ef4444;font-size:13px">Error: ${e.message}</div>`;}
+  }
+}
+function renderAssistant(asst,lastRes){
+  const tai=t.ai;const col=riskCol(asst.risk_level);const gc=asst.risk_level==='high'?'glow-r':asst.risk_level==='medium'?'glow-a':'glow-g';
+  document.getElementById('ai-content').innerHTML=`
+    <div class="grid2" style="margin-bottom:14px">
+      <div>
+        <div class="card resp-card" style="background:${col}08;border:2px solid ${col}33;margin-bottom:12px">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px"><div class="${gc}" style="width:38px;height:38px;min-width:38px;border-radius:50%;background:${col}22;border:2px solid ${col}44;display:flex;align-items:center;justify-content:center">${icon(asst.risk_level==='high'?'alert':asst.risk_level==='medium'?'clock':'check',19,col)}</div><div class="resp-head" style="color:${col}">${asst.headline}</div></div>
+          <div class="resp-body">${asst.explanation}</div>
+          <div class="resp-sug"><div style="font-size:10.5px;font-weight:700;color:#0d9488;text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px">${tai.suggestion}</div>${asst.suggestion}</div>
+        </div>
+        <div class="card">
+          <div style="font-weight:700;font-size:12.5px;color:#0f172a;margin-bottom:10px;display:flex;align-items:center;gap:6px">${icon('layers',14,'#3b82f6')} ${tai.factors}</div>
+          ${(asst.influencing_factors||[]).map(f=>`<div class="factor-item"><span style="color:#0d9488;flex-shrink:0">${icon('check',11,'#0d9488')}</span><span>${f}</span></div>`).join('')}
+        </div>
+      </div>
+      <div>
+        <div class="card" style="margin-bottom:12px">
+          <div style="font-weight:700;font-size:12.5px;color:#0f172a;margin-bottom:10px">${tai.lastPrediction}</div>
+          ${[[t.act.state,{walking:t.act.walking,sitting:t.act.sitting,lying_down:t.act.lyingDown,inactive:t.act.inactive}[lastRes.activity_state]||lastRes.activity_state],[t.act.dur,`${lastRes.inactivity_duration} ${t.act.min}`],[t.act.int,`${lastRes.movement_intensity}/100`],[t.dash.riskLevel,riskBadge(lastRes.simulated_risk)]].map(([l,v])=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid #f8fafc;font-size:12.5px"><span style="color:#64748b">${l}</span><span style="font-weight:600;color:#0f172a">${v}</span></div>`).join('')}
+          <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn btn-primary btn-sm" onclick="nav('activity')">${icon('activity',13,'#fff')} ${t.nav.activity}</button>
+            <button class="btn btn-outline btn-sm" onclick="refreshAssistant()">${icon('refresh',13)} ${tai.refresh}</button>
+          </div>
+        </div>
+        <div class="card">
+          <div style="font-weight:700;font-size:12.5px;color:#0f172a;margin-bottom:8px;display:flex;align-items:center;gap:6px">${icon('info',14,'#64748b')} ${tai.engineType}</div>
+          <span class="badge badge-model" style="margin-bottom:8px">${tai.ruleBasedEngine}</span>
+          <div class="disclaimer-box" style="margin-top:8px">${asst.disclaimer}</div>
+        </div>
+      </div>
+    </div>`;
+}
+async function refreshAssistant(){actState.lastAssistant=null;await pageAI();}
+
+// ═══════════════════════════════════════════════════════════
+// PAGE: EMERGENCY SIMULATION
+// ═══════════════════════════════════════════════════════════
+function pageEmergency(){
+  const te=t.emerg;
+  const scenarios=[
+    {id:'normal',             label:te.normal,     desc:te.normalDesc,   risk:'low',   icon:'activity'},
+    {id:'unusual_inactivity', label:te.unusual,    desc:te.unusualDesc,  risk:'medium',icon:'clock'},
+    {id:'possible_fall',      label:te.fall,       desc:te.fallDesc,     risk:'high',  icon:'alert'},
+    {id:'high_risk_demo',     label:te.highRisk,   desc:te.highRiskDesc, risk:'high',  icon:'zap'},
+  ];
+  document.getElementById('page-area').innerHTML=`<div class="page-in">
+    <div class="sec-hdr"><div class="sec-icon" style="background:linear-gradient(135deg,#dc2626,#ef4444)">${icon('alert',18,'#fff')}</div><div><div class="sec-title">${te.title}</div><div class="sec-sub">${te.subtitle}</div></div></div>
+    <div class="disclaimer-box" style="margin-bottom:16px;display:flex;align-items:flex-start;gap:8px">${icon('alert',14,'#92400e')} <span>${te.simDisclaimer}</span></div>
+    <div class="grid2" style="margin-bottom:14px">
+      <div class="flex-col">
+        <div class="card">
+          <div class="field-label" style="margin-bottom:10px">${te.selectScenario}</div>
+          <div style="display:flex;flex-direction:column;gap:8px">
+            ${scenarios.map(s=>{
+              const bgMap={low:'#dcfce7',medium:'#fef3c7',high:'#fee2e2'};
+              const selCls=emergState.selectedId===s.id?` sel-${s.risk==='medium'?'med':s.risk}`:'';
+              return`<div class="sc-card${selCls}" onclick="selectScenario('${s.id}')">
+                <div style="width:34px;height:34px;min-width:34px;border-radius:8px;background:${bgMap[s.risk]};display:flex;align-items:center;justify-content:center">${icon(s.icon,16,riskCol(s.risk))}</div>
+                <div style="flex:1;min-width:0"><div style="font-weight:700;font-size:13px;color:#0f172a;margin-bottom:2px">${s.label}</div><div style="font-size:11.5px;color:#64748b">${s.desc}</div></div>
+                <span class="badge badge-${s.risk}" style="font-size:9.5px;flex-shrink:0">${riskLabelShort(s.risk)}</span>
+              </div>`;
+            }).join('')}
+          </div>
+          <div style="display:flex;gap:8px;margin-top:14px">
+            <button class="btn btn-primary" id="run-btn" onclick="runScenario()" ${!emergState.selectedId||emergState.running?'disabled':''} style="flex:1;justify-content:center">
+              ${emergState.running?`${icon('loader',14,'#fff')} ${te.running}`:icon('play',14,'#fff')+' '+te.runBtn}
+            </button>
+            <button class="btn btn-outline" onclick="resetEmergency()" title="${te.resetBtn}">${icon('refresh',14)} ${te.resetBtn}</button>
+          </div>
+        </div>
+      </div>
+      <div class="flex-col">
+        <div class="card" id="emerg-result">
+          ${emergState.result?renderEmergResult(emergState.result):`<div style="padding:24px 0;text-align:center"><div style="opacity:.25;margin-bottom:10px">${icon('alert',36,'#94a3b8')}</div><div style="font-size:13px;color:#94a3b8;line-height:1.6">${te.noResult}</div></div>`}
+        </div>
+      </div>
+    </div>
+    ${emergState.result?`<div class="card" style="margin-top:0"><div style="font-weight:700;font-size:13px;color:#0f172a;margin-bottom:12px;display:flex;align-items:center;gap:7px">${icon('cpu',15,'#7c3aed')} ${te.response}</div><div id="emerg-response">${renderEmergResponse(emergState.result)}</div></div>`:''}
+  </div>`;
+}
+function riskLabelShort(r){return r==='high'?t.dash.high:r==='medium'?t.dash.medium:t.dash.low;}
+function selectScenario(id){emergState.selectedId=id;pageEmergency();}
+function resetEmergency(){emergState={selectedId:null,running:false,result:null};pageEmergency();}
+function renderEmergResult(res){
+  const te=t.emerg;const col=riskCol(res.simulated_risk);const gc=res.simulated_risk==='high'?'glow-r':res.simulated_risk==='medium'?'glow-a':'glow-g';
+  const rLabel=riskLabelShort(res.simulated_risk);
+  const pCols={low:'#22c55e',medium:'#f59e0b',high:'#ef4444'};const pLbls={low:t.act.rLow,medium:t.act.rMed,high:t.act.rHigh};
+  const warning=res.warning?`<div style="display:flex;align-items:flex-start;gap:7px;background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:8px 12px;margin-bottom:12px;font-size:11.5px;color:#92400e">${icon('alert',13,'#d97706')} <span>${res.warning}</span></div>`:'';
+  const steps=(res.steps||[]).map((s,i)=>`<div class="step-row step-in" style="animation-delay:${i*0.1}s"><div class="step-num done">${i+1}</div><span style="font-size:12.5px;color:#334155">${s}</span></div>`).join('');
+  const probBars=res.probabilities&&Object.keys(res.probabilities).length>0?`<div style="margin-top:12px;padding-top:10px;border-top:1px solid #f1f5f9">${['low','medium','high'].map(cls=>{const pv=res.probabilities[cls]||0;return`<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;font-size:11.5px"><span style="width:68px;color:#64748b;flex-shrink:0">${pLbls[cls]}</span><div class="prob-bar-track"><div class="prob-bar-fill" style="width:${pct(pv)};background:${pCols[cls]}"></div></div><span style="width:36px;text-align:right;font-weight:700;color:${pCols[cls]}">${Math.round(pv*100)}%</span></div>`;}).join('')}</div>`:''
+  return`
+    <div style="display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:9px;background:${col}0d;border:2px solid ${col}33;margin-bottom:14px">
+      <div class="${gc}" style="width:42px;height:42px;min-width:42px;border-radius:50%;background:${col}22;border:2px solid ${col}44;display:flex;align-items:center;justify-content:center">${icon(res.simulated_risk==='high'?'alert':res.simulated_risk==='medium'?'clock':'check',21,col)}</div>
+      <div style="flex:1"><div style="font-size:17px;font-weight:800;color:${col};margin-bottom:2px">${rLabel}</div><div style="font-size:11px;color:#94a3b8">${res.prediction_source==='ml_model'?`ML model`:'Heuristic'} · ${fmtRelative(res.timestamp)}</div></div>
+      ${probBars}
+    </div>
+    ${warning}
+    <div style="font-weight:700;font-size:12px;color:#64748b;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">${te.steps}</div>
+    ${steps}
+    <div class="sim-notice" style="margin-top:12px">${icon('check',13,'#16a34a')} ${te.simDisclaimer}</div>`;
+}
+function renderEmergResponse(res){
+  if(!res.assistant_response)return'';
+  const asst=res.assistant_response;const col=riskCol(asst.risk_level);
+  return`<div style="display:flex;align-items:flex-start;gap:10px;padding:12px 14px;border-radius:9px;background:${col}08;border:1.5px solid ${col}22;margin-bottom:12px"><div style="flex:1"><div style="font-size:14px;font-weight:700;color:${col};margin-bottom:6px">${asst.headline}</div><div style="font-size:12.5px;color:#334155;line-height:1.6;margin-bottom:10px">${asst.explanation}</div><div class="resp-sug" style="font-size:12px">${asst.suggestion}</div></div></div><div class="disclaimer-box">${asst.disclaimer}</div>`;
+}
+async function runScenario(){
+  if(!emergState.selectedId||emergState.running)return;
+  emergState.running=true;pageEmergency();
+  try{
+    const res=await api('/api/scenarios/run',{method:'POST',body:JSON.stringify({scenario_id:emergState.selectedId,lang})});
+    emergState.result=res;emergState.running=false;
+    actState.lastResult={simulated_risk:res.simulated_risk,activity_state:res.scenario.activity_state,inactivity_duration:res.scenario.inactivity_duration,movement_intensity:res.scenario.movement_intensity,probabilities:res.probabilities,prediction_source:res.prediction_source,hour_of_day:new Date().getHours(),timestamp:res.timestamp};
+    actState.lastAssistant=res.assistant_response;
+    const notifData=await api('/api/notifications');
+    unreadCount=notifData.unread||0;buildNav();
+    pageEmergency();
+    toast(lang==='hi'?`परिदृश्य पूर्ण: ${riskLabelShort(res.simulated_risk)}`:`Scenario complete: ${riskLabelShort(res.simulated_risk)}`,res.simulated_risk==='high'?'warning':'success');
+  }catch(e){emergState.running=false;pageEmergency();toast('Error running scenario','error');}
+}
+
+// ═══════════════════════════════════════════════════════════
+// PAGE: NOTIFICATIONS (shown as tab inside History page header area)
+// ═══════════════════════════════════════════════════════════
+async function pageNotifications(){
+  const tn=t.notif;
+  document.getElementById('page-area').innerHTML=`<div class="page-in">
+    <div class="sec-hdr"><div class="sec-icon" style="background:linear-gradient(135deg,#0ea5e9,#38bdf8)">${icon('bell',18,'#fff')}</div><div><div class="sec-title">${tn.title}</div><div class="sec-sub">${tn.subtitle}</div></div></div>
+    <div id="notif-content"><div style="color:#94a3b8;font-size:13px;padding:20px 0">Loading…</div></div>
+  </div>`;
+  await loadNotifications();
+}
+async function loadNotifications(){
+  const tn=t.notif;
+  try{
+    const data=await api('/api/notifications');
+    unreadCount=data.unread||0;buildNav();
+    const notifs=data.notifications||[];
+    if(!notifs.length){
+      document.getElementById('notif-content').innerHTML=`<div style="text-align:center;padding:48px 0"><div style="opacity:.25;margin-bottom:12px">${icon('bell',40,'#94a3b8')}</div><div style="font-size:14px;font-weight:700;color:#94a3b8;margin-bottom:6px">${tn.noNotifs}</div><div style="font-size:12.5px;color:#cbd5e1;margin-bottom:18px">${tn.noNotifsDesc}</div><button class="btn btn-primary btn-sm" onclick="nav('emergency')">${icon('play',13,'#fff')} ${tn.goEmerg}</button></div>`;return;
+    }
+    document.getElementById('notif-content').innerHTML=`
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px">
+        <div style="font-size:12.5px;color:#64748b">${data.unread} ${tn.unread} · ${notifs.length} total</div>
+        <div style="display:flex;gap:7px;flex-wrap:wrap">
+          ${data.unread>0?`<button class="btn btn-outline btn-sm" onclick="markAllRead()">${icon('check',13)} ${tn.markAllRead}</button>`:''}
+          <button class="btn btn-danger btn-sm" onclick="clearAllNotifs()">${icon('trash',13,'#dc2626')} ${tn.clearAll}</button>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px">${notifs.map(n=>renderNotifItem(n)).join('')}</div>`;
+  }catch(e){document.getElementById('notif-content').innerHTML=`<div style="color:#ef4444;font-size:13px">Error loading notifications</div>`;}
+}
+function renderNotifItem(n){
+  const tn=t.notif;
+  const riskCls=`risk-${n.risk||'low'}`;
+  const unreadCls=!n.read?'unread':'';
+  const notice=lang==='hi'?tn.simNoticeHi:tn.simNotice;
+  return`<div class="notif-item ${riskCls} ${unreadCls}" id="notif-${n.id}">
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px">
+      <div style="display:flex;align-items:flex-start;gap:10px;flex:1;min-width:0">
+        <div style="width:32px;height:32px;min-width:32px;border-radius:8px;background:${riskCol(n.risk)}18;display:flex;align-items:center;justify-content:center;margin-top:1px">${icon(n.risk==='high'?'alert':n.risk==='medium'?'clock':'check',15,riskCol(n.risk))}</div>
+        <div style="flex:1;min-width:0">
+          <div style="display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-bottom:3px">
+            <span style="font-weight:700;font-size:13px;color:#0f172a">${n.title}</span>
+            ${!n.read?`<span style="width:7px;height:7px;border-radius:50%;background:#3b82f6;flex-shrink:0;display:inline-block"></span>`:''}
+            <span class="badge badge-${n.risk||'low'}" style="font-size:9.5px">${n.risk==='high'?tn.high:n.risk==='medium'?tn.medium:tn.low}</span>
+          </div>
+          <div style="font-size:12.5px;color:#475569;margin-bottom:5px;line-height:1.5">${n.body}</div>
+          <div style="font-size:10.5px;color:#94a3b8">${fmtRelative(n.timestamp)}</div>
+          <div style="font-size:10.5px;color:#16a34a;margin-top:4px;display:flex;align-items:center;gap:5px">${icon('check',10,'#16a34a')} ${notice}</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:5px;flex-shrink:0">
+        ${!n.read?`<button class="btn btn-outline btn-sm" onclick="markOneRead('${n.id}')" title="${tn.markRead}" style="padding:4px 8px">${icon('eye',12)}</button>`:''}
+        <button class="btn btn-outline btn-sm" onclick="dismissNotif('${n.id}')" title="${tn.dismiss}" style="padding:4px 8px">${icon('xc',12)}</button>
+      </div>
+    </div>
+  </div>`;
+}
+async function markOneRead(id){
+  try{await api(`/api/notifications/${id}/read`,{method:'PATCH'});await loadNotifications();}catch(e){toast('Error','error');}
+}
+async function markAllRead(){
+  try{await api('/api/notifications/read-all',{method:'PATCH'});await loadNotifications();}catch(e){toast('Error','error');}
+}
+async function dismissNotif(id){
+  try{await api(`/api/notifications/${id}`,{method:'DELETE'});await loadNotifications();}catch(e){toast('Error','error');}
+}
+function clearAllNotifs(){
+  showConfirm(t.notif.clearAll,lang==='hi'?'सभी सूचनाएँ हटाएँ?':'Delete all notifications?',t.hist.confirm,async()=>{
+    try{await api('/api/notifications',{method:'DELETE'});unreadCount=0;buildNav();await loadNotifications();}catch(e){toast('Error','error');}
+  });
+}
+
+// ═══════════════════════════════════════════════════════════
+// PAGE: EVENT HISTORY
+// ═══════════════════════════════════════════════════════════
+let histFilter={type:'',risk:''};
+async function pageHistory(){
+  const th=t.hist;
+  document.getElementById('page-area').innerHTML=`<div class="page-in">
+    <div class="sec-hdr"><div class="sec-icon" style="background:linear-gradient(135deg,#0f766e,#0d9488)">${icon('history',18,'#fff')}</div><div><div class="sec-title">${th.title}</div><div class="sec-sub">${th.subtitle}</div></div></div>
+
+    <!-- Notifications inline panel -->
+    <div class="card" style="margin-bottom:14px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px">
+        <div style="display:flex;align-items:center;gap:8px"><div style="font-weight:700;font-size:13px;color:#0f172a">${t.notif.title}</div>${unreadCount>0?`<span class="nav-badge red" style="font-size:10px;padding:1px 7px">${unreadCount}</span>`:''}</div>
+        <button class="btn btn-outline btn-sm" onclick="page='notifications';document.getElementById('page-area').innerHTML='';pageNotifications()">${icon('bell',13)} ${lang==='hi'?'सभी देखें':'View All'}</button>
+      </div>
+      <div id="notif-mini"><div style="color:#94a3b8;font-size:12px">Loading…</div></div>
+    </div>
+
+    <!-- Event filter + table -->
+    <div class="card">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:10px">
+        <div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap">
+          <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:#64748b">${icon('filter',12,'#64748b')} ${th.filterType}:</div>
+          <select id="type-filter" onchange="histFilter.type=this.value;refreshHistTable()" style="font-size:12px">
+            <option value="">${th.allTypes}</option>
+            <option value="activity_analysis" ${histFilter.type==='activity_analysis'?'selected':''}>${th.catActivity}</option>
+            <option value="scenario_run" ${histFilter.type==='scenario_run'?'selected':''}>${th.catScenario}</option>
+            <option value="qlearn_train" ${histFilter.type==='qlearn_train'?'selected':''}>${th.catQLab}</option>
+          </select>
+          <select id="risk-filter" onchange="histFilter.risk=this.value;refreshHistTable()" style="font-size:12px">
+            <option value="">${th.allRisks}</option>
+            <option value="low" ${histFilter.risk==='low'?'selected':''}>${t.dash.low}</option>
+            <option value="medium" ${histFilter.risk==='medium'?'selected':''}>${t.dash.medium}</option>
+            <option value="high" ${histFilter.risk==='high'?'selected':''}>${t.dash.high}</option>
+          </select>
+        </div>
+        <button class="btn btn-danger btn-sm" onclick="clearHistory()">${icon('trash',13,'#dc2626')} ${th.clearAll}</button>
+      </div>
+      <div id="hist-table"><div style="color:#94a3b8;font-size:13px">Loading…</div></div>
+    </div>
+  </div>`;
+  loadMiniNotifs();refreshHistTable();
+}
+async function loadMiniNotifs(){
+  try{
+    const data=await api('/api/notifications');
+    unreadCount=data.unread||0;buildNav();
+    const notifs=(data.notifications||[]).slice(0,4);
+    if(!notifs.length){document.getElementById('notif-mini').innerHTML=`<div style="color:#94a3b8;font-size:12px;padding:6px 0">${t.notif.noNotifs}</div>`;return;}
+    document.getElementById('notif-mini').innerHTML=`<div style="display:flex;flex-direction:column;gap:7px">${notifs.map(n=>`<div style="display:flex;align-items:center;gap:9px;padding:7px 0;border-bottom:1px solid #f8fafc"><div style="width:8px;height:8px;border-radius:50%;background:${riskCol(n.risk)};flex-shrink:0"></div><div style="flex:1;min-width:0"><div style="font-size:12.5px;font-weight:${n.read?'400':'700'};color:#0f172a;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${n.title}</div><div style="font-size:10.5px;color:#94a3b8">${fmtRelative(n.timestamp)}</div></div><span class="badge badge-${n.risk||'low'}" style="font-size:9.5px">${riskLabelShort(n.risk)}</span>${!n.read?`<button class="btn btn-outline btn-sm" onclick="markOneRead('${n.id}');loadMiniNotifs()" style="padding:2px 7px;font-size:10.5px">${icon('eye',10)}</button>`:''}</div>`).join('')}</div>`;
+  }catch(e){document.getElementById('notif-mini').innerHTML=`<div style="color:#94a3b8;font-size:12px">Could not load</div>`;}
+}
+async function refreshHistTable(){
+  const th=t.hist;
+  try{
+    let url=`/api/events?limit=100`;
+    if(histFilter.type)url+=`&category=${histFilter.type}`;
+    if(histFilter.risk)url+=`&risk=${histFilter.risk}`;
+    const data=await api(url);
+    const events=data.events||[];
+    const el=document.getElementById('hist-table');if(!el)return;
+    if(!events.length){el.innerHTML=`<div style="padding:32px 0;text-align:center"><div style="opacity:.25;margin-bottom:10px">${icon('history',36,'#94a3b8')}</div><div style="font-size:14px;font-weight:600;color:#94a3b8;margin-bottom:5px">${th.noEvents}</div><div style="font-size:12px;color:#cbd5e1;max-width:340px;margin:0 auto">${th.noEventsDesc}</div></div>`;return;}
+    el.innerHTML=`<div style="font-size:11px;color:#94a3b8;margin-bottom:8px">${th.showing} ${events.length} / ${data.total} ${th.total}</div><div style="overflow-x:auto"><table><thead><tr><th>${th.time}</th><th>${th.category}</th><th>${th.activity}</th><th>${th.risk}</th><th>${th.source}</th><th>${th.notes}</th></tr></thead><tbody>${events.map(ev=>`<tr><td style="font-size:11.5px;color:#64748b;white-space:nowrap">${fmtDate(ev.timestamp)}</td><td><span class="badge badge-gray" style="font-size:9.5px">${catLabel(ev.category)}</span></td><td style="font-weight:600">${actLabel(ev.activity_state)}</td><td>${riskBadge(ev.simulated_risk)}</td><td style="font-size:11px;color:#94a3b8">${ev.prediction_source==='ml_model'?'ML':'rule'}</td><td style="font-size:11.5px;color:#64748b;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${ev.notes||'—'}</td></tr>`).join('')}</tbody></table></div>`;
+  }catch(e){const el=document.getElementById('hist-table');if(el)el.innerHTML=`<div style="color:#ef4444;font-size:13px">Error loading events</div>`;}
+}
+function clearHistory(){
+  showConfirm(t.hist.confirmClear,t.hist.confirmClearBody,t.hist.confirm,async()=>{
+    try{await api('/api/events',{method:'DELETE'});refreshHistTable();toast(lang==='hi'?'इतिहास साफ किया':'History cleared','success');}catch(e){toast('Error','error');}
+  });
+}
+
+// ═══════════════════════════════════════════════════════════
+// PAGE: LEARNING LAB (Q-Learning)
+// ═══════════════════════════════════════════════════════════
+async function pageLab(){
+  const tl=t.lab;
+  document.getElementById('page-area').innerHTML=`<div class="page-in">
+    <div class="sec-hdr"><div class="sec-icon" style="background:linear-gradient(135deg,#7c3aed,#a855f7)">${icon('flask',18,'#fff')}</div><div><div class="sec-title">${tl.title}</div><div class="sec-sub">${tl.subtitle}</div></div></div>
+    <div class="disclaimer-box" style="margin-bottom:16px;display:flex;align-items:flex-start;gap:8px">${icon('info',14,'#92400e')} <span>${tl.disclaimer}</span></div>
+
+    <!-- Explainer cards -->
+    <div class="grid3" style="margin-bottom:16px">
+      <div class="card" style="border-top:3px solid #3b82f6">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">${icon('layers',15,'#3b82f6')}<span style="font-weight:700;font-size:13px;color:#0f172a">${tl.states}</span></div>
+        <div style="font-size:12px;color:#64748b;margin-bottom:10px">${tl.stateDesc}</div>
+        <div id="state-list" style="display:flex;flex-direction:column;gap:5px"><div style="color:#94a3b8;font-size:11.5px">Loading…</div></div>
+      </div>
+      <div class="card" style="border-top:3px solid #0d9488">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">${icon('zap',15,'#0d9488')}<span style="font-weight:700;font-size:13px;color:#0f172a">${tl.actions}</span></div>
+        <div style="font-size:12px;color:#64748b;margin-bottom:10px">${tl.actionDesc}</div>
+        <div id="action-list" style="display:flex;flex-direction:column;gap:5px"><div style="color:#94a3b8;font-size:11.5px">Loading…</div></div>
+      </div>
+      <div class="card" style="border-top:3px solid #f59e0b">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">${icon('award',15,'#f59e0b')}<span style="font-weight:700;font-size:13px;color:#0f172a">${tl.rewards}</span></div>
+        <div style="font-size:12px;color:#64748b;margin-bottom:10px">${tl.rewardDesc}</div>
+        <div style="font-size:12px;color:#334155;line-height:1.7">
+          <div style="display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid #f1f5f9"><span>${lang==='hi'?'सही कार्रवाई (सामान्य)':'Correct action (normal)'}</span><span style="font-weight:700;color:#22c55e">+1.0</span></div>
+          <div style="display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid #f1f5f9"><span>${lang==='hi'?'सही कार्रवाई (उच्च जोखिम)':'Correct action (high risk)'}</span><span style="font-weight:700;color:#22c55e">+2.0</span></div>
+          <div style="display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid #f1f5f9"><span>${lang==='hi'?'निकट कार्रवाई':'Near-correct action'}</span><span style="font-weight:700;color:#f59e0b">-0.5</span></div>
+          <div style="display:flex;justify-content:space-between;padding:3px 0"><span>${lang==='hi'?'गलत कार्रवाई':'Wrong action'}</span><span style="font-weight:700;color:#ef4444">-1.0</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Train controls -->
+    <div class="card" style="margin-bottom:14px">
+      <div style="font-weight:700;font-size:13px;color:#0f172a;margin-bottom:12px;display:flex;align-items:center;gap:7px">${icon('target',15,'#7c3aed')} ${lang==='hi'?'प्रशिक्षण नियंत्रण':'Training Controls'}</div>
+      <div style="display:flex;align-items:flex-end;gap:14px;flex-wrap:wrap">
+        <div>
+          <div class="field-label" style="margin-bottom:6px">${tl.episodes}</div>
+          <div style="display:flex;gap:6px">
+            ${[100,500,1000,2000].map(n=>`<button onclick="labState.episodes=${n};document.querySelectorAll('.ep-btn').forEach(b=>b.classList.toggle('sel',b.textContent=='${n}'))" class="act-btn ep-btn${labState.episodes===n?' sel':''}" style="min-width:50px;padding:6px 10px;font-size:12px">${n}</button>`).join('')}
+          </div>
+        </div>
+        <div>
+          <div class="field-label" style="margin-bottom:6px">${tl.seed}</div>
+          <input type="number" id="lab-seed" value="${labState.seed}" min="1" max="9999" style="border:1.5px solid #e2e8f0;border-radius:7px;padding:6px 10px;font-size:12.5px;width:80px;color:#334155" oninput="labState.seed=+this.value||42"/>
+        </div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-primary" id="train-btn" onclick="trainAgent()">${icon('play',14,'#fff')} ${tl.train}</button>
+          ${labState.trained?`<button class="btn btn-outline" onclick="resetLab()">${icon('refresh',14)} ${tl.reset}</button>`:''}
+        </div>
+      </div>
+      ${labState.trained&&labState.data?`<div class="sim-notice" style="margin-top:12px">${icon('check',13,'#16a34a')} ${tl.trained} · ${tl.finalReward}: <strong>${labState.data.final_avg_reward}</strong> · ${tl.episodes}: ${labState.data.episodes} · ${tl.seed}: ${labState.data.seed}</div>`:''}
+    </div>
+
+    <!-- Results (shown after training) -->
+    <div id="lab-results">${labState.trained&&labState.data?renderLabResults():`<div style="text-align:center;padding:32px 0;color:#94a3b8;font-size:13px">${tl.notTrained}</div>`}</div>
+  </div>`;
+  loadLabInfo();
+}
+async function loadLabInfo(){
+  try{
+    const info=await api('/api/qlearn/info');
+    const states=info.states||[];const actions=info.actions||[];
+    const sl=document.getElementById('state-list');const al=document.getElementById('action-list');
+    if(sl)sl.innerHTML=states.map(s=>`<div style="display:flex;align-items:center;justify-content:space-between;font-size:11.5px;padding:2px 0"><span style="color:#334155">${lang==='hi'?s.name_hi:s.name_en}</span><span class="badge badge-${s.risk}" style="font-size:9px">${riskLabelShort(s.risk)}</span></div>`).join('');
+    if(al)al.innerHTML=actions.map((a,i)=>`<div style="display:flex;align-items:center;gap:7px;font-size:11.5px;padding:2px 0"><div style="width:18px;height:18px;min-width:18px;border-radius:50%;background:#f1f5f9;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#475569">${i}</div><span style="color:#334155">${lang==='hi'?a.name_hi:a.name_en}</span></div>`).join('');
+  }catch(e){}
+}
+async function trainAgent(){
+  const btn=document.getElementById('train-btn');const tl=t.lab;
+  if(btn){btn.disabled=true;btn.innerHTML=`${icon('loader',14,'#fff')} ${tl.training}`;}
+  try{
+    const data=await api('/api/qlearn/train',{method:'POST',body:JSON.stringify({episodes:labState.episodes,seed:labState.seed})});
+    labState.trained=true;labState.data=data;
+    pageLab();toast(lang==='hi'?`एजेंट प्रशिक्षित! औसत पुरस्कार: ${data.final_avg_reward}`:`Agent trained! Avg reward: ${data.final_avg_reward}`,'success');
+  }catch(e){toast('Training error: '+e.message,'error');}
+  if(btn){btn.disabled=false;btn.innerHTML=`${icon('play',14,'#fff')} ${tl.train}`;}
+}
+function resetLab(){labState={trained:false,data:null,episodes:500,seed:42};pageLab();}
+function renderLabResults(){
+  if(!labState.data)return'';
+  const tl=t.lab;const data=labState.data;
+  const states=data.states||[];const actions=data.actions||[];const Q=data.q_table||[];const best=data.best_actions||[];
+  const rewardHist=data.reward_history||[];
+  // Reward chart
+  const maxR=Math.max(...rewardHist.map(r=>r.reward),0.1);
+  const minR=Math.min(...rewardHist.map(r=>r.reward),0);
+  const range=maxR-minR||1;
+  const chartBars=rewardHist.map(r=>{const h=Math.max(2,Math.round(((r.reward-minR)/range)*100));return`<div class="reward-bar" style="height:${h}%;background:linear-gradient(to top,#0f172a88,#3b82f6aa)" title="Ep ${r.episode}: ${r.reward}"></div>`;}).join('');
+  // Q-table
+  const qTableRows=states.map((s,si)=>{
+    const bestIdx=best[si]??0;const sName=lang==='hi'?s.name_hi:s.name_en;
+    return`<tr><td class="state-cell">${sName}</td><td class="badge-cell"><span class="badge badge-${s.risk}" style="font-size:9px">${riskLabelShort(s.risk)}</span></td>${Q[si]?.map((v,ai)=>`<td class="${ai===bestIdx?'best-action':''}" title="${(lang==='hi'?actions[ai]?.name_hi:actions[ai]?.name_en)||ai}">${v.toFixed(2)}</td>`).join('')||''}<td style="font-weight:700;color:#0f172a;font-size:12px">${lang==='hi'?actions[bestIdx]?.name_hi:actions[bestIdx]?.name_en}</td></tr>`;
+  }).join('');
+  // Agent demo dropdown
+  const demoDrop=`<select id="demo-state" onchange="updateAgentDemo()" style="margin-right:10px">${states.map((s,i)=>`<option value="${i}">${lang==='hi'?s.name_hi:s.name_en}</option>`).join('')}</select>`;
+  return`
+    <div class="grid2" style="margin-bottom:14px">
+      <div class="card">
+        <div style="font-weight:700;font-size:13px;color:#0f172a;margin-bottom:10px;display:flex;align-items:center;gap:7px">${icon('trending',15,'#3b82f6')} ${tl.rewardChart}</div>
+        <div class="reward-chart" style="margin-bottom:6px">${chartBars}</div>
+        <div style="display:flex;justify-content:space-between;font-size:9.5px;color:#94a3b8">
+          <span>Ep 1</span><span>Ep ${Math.round(data.episodes/2)}</span><span>Ep ${data.episodes}</span>
+        </div>
+        <div style="margin-top:8px"><div style="font-size:11px;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">${tl.hyperparams}</div>
+          <div style="display:flex;flex-wrap:wrap;gap:5px">${[['α ('+tl.alpha+')',data.hyperparams?.alpha],['γ ('+tl.gamma+')',data.hyperparams?.gamma],['ε','1.0→0.05']].map(([k,v])=>`<span class="badge badge-blue" style="font-size:10px">${k}: ${v}</span>`).join('')}</div>
+        </div>
+      </div>
+      <div class="card">
+        <div style="font-weight:700;font-size:13px;color:#0f172a;margin-bottom:10px;display:flex;align-items:center;gap:7px">${icon('target',15,'#7c3aed')} ${tl.agentDemo}</div>
+        <div style="font-size:12px;color:#64748b;margin-bottom:10px">${tl.selectState}:</div>
+        ${demoDrop}
+        <div id="demo-result" style="margin-top:12px"></div>
+      </div>
+    </div>
+    <div class="card">
+      <div style="font-weight:700;font-size:13px;color:#0f172a;margin-bottom:10px;display:flex;align-items:center;gap:7px">${icon('book',15,'#0d9488')} ${tl.qTable}</div>
+      <div style="overflow-x:auto"><table class="qtable"><thead><tr><th style="text-align:left">${tl.stateLabel}</th><th>${tl.riskLabel}</th>${actions.map(a=>`<th>${lang==='hi'?a.name_hi:a.name_en}</th>`).join('')}<th>${tl.learnedLabel}</th></tr></thead><tbody>${qTableRows}</tbody></table></div>
+      <div style="font-size:10.5px;color:#94a3b8;margin-top:8px">${lang==='hi'?'हरे रंग = प्रत्येक अवस्था के लिए सर्वोत्तम कार्रवाई':'Green cells = best action selected by the agent for each state'}</div>
+    </div>`;
+}
+function updateAgentDemo(){
+  const sel=document.getElementById('demo-state');if(!sel||!labState.data)return;
+  const si=+sel.value;const data=labState.data;const tl=t.lab;
+  const states=data.states||[];const actions=data.actions||[];const best=data.best_actions||[];
+  const s=states[si];const bestIdx=best[si]??0;const bestAction=actions[bestIdx];
+  const actionName=lang==='hi'?bestAction?.name_hi:bestAction?.name_en;
+  const col=riskCol(s?.risk||'low');const idealIdx=s?.ideal_action??0;const isCorrect=bestIdx===idealIdx;
+  document.getElementById('demo-result').innerHTML=`
+    <div style="display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:9px;background:${col}0d;border:2px solid ${col}33">
+      <div style="flex:1">
+        <div style="font-size:11px;color:#64748b;margin-bottom:4px">${tl.bestAction}</div>
+        <div style="font-size:15px;font-weight:800;color:${col}">${actionName}</div>
+        <div style="font-size:11px;color:#94a3b8;margin-top:3px">${lang==='hi'?'अवस्था:':'State:'} ${lang==='hi'?s?.name_hi:s?.name_en} · <span class="badge badge-${s?.risk||'low'}" style="font-size:9px;vertical-align:middle">${riskLabelShort(s?.risk||'low')}</span></div>
+      </div>
+      ${isCorrect?`<span class="badge badge-low" style="font-size:10px">${tl.correctLabel}</span>`:`<span class="badge badge-gray" style="font-size:10px">${lang==='hi'?'अनुकूलनशील':'Learning'}</span>`}
+    </div>`;
+}
+
+// ═══════════════════════════════════════════════════════════
+// PAGE: ABOUT & SETTINGS
+// ═══════════════════════════════════════════════════════════
+function pageAbout(){
+  const ta=t.about;
+  const tech=[
+    {n:'FastAPI (Python)',    d:'REST API backend',            c:'#16a34a'},
+    {n:'Pure-Python RF',      d:'No-scipy Random Forest',      c:'#7c3aed'},
+    {n:'NumPy',               d:'Array math for ML',           c:'#3b82f6'},
+    {n:'Q-Learning',          d:'Educational RL simulation',   c:'#f59e0b'},
+    {n:'Vanilla JS',          d:'Frontend (no build step)',     c:'#0d9488'},
+    {n:'Inline CSS',          d:'Design system',               c:'#475569'},
+  ];
+  document.getElementById('page-area').innerHTML=`<div class="page-in" style="max-width:680px;margin:0 auto">
+    <div class="sec-hdr"><div class="sec-icon" style="background:linear-gradient(135deg,#334155,#475569)">${icon('settings',18,'#fff')}</div><div><div class="sec-title">${ta.title}</div><div class="sec-sub">${ta.subtitle}</div></div></div>
+    <div class="card" style="margin-bottom:13px">
+      <div class="flex-row" style="margin-bottom:11px">${icon('globe',15,'#3b82f6')} <span style="font-weight:700;font-size:13px;color:#0f172a">${ta.langLabel}</span></div>
+      <div style="display:flex;gap:9px">
+        ${['en','hi'].map(lc=>`<button onclick="setLang('${lc}')" style="flex:1;padding:11px;border:2px solid ${lang===lc?'#0f172a':'#e2e8f0'};border-radius:9px;cursor:pointer;background:${lang===lc?'#0f172a':'#fff'};color:${lang===lc?'#fff':'#334155'};font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;gap:7px;transition:all .15s">${lc==='en'?'🇬🇧':'🇮🇳'} ${lc==='en'?ta.english:ta.hindi}${lang===lc?` ${icon('check',13,'#7dd3fc')}`:''}</button>`).join('')}
+      </div>
+    </div>
+    <div class="card" style="margin-bottom:13px">
+      <div class="flex-row" style="margin-bottom:10px">${icon('sun',15,'#f59e0b')} <span style="font-weight:700;font-size:13px;color:#0f172a">${ta.textSize}</span></div>
+      <div style="display:flex;gap:7px">
+        <button class="btn ${!textLarge?'btn-primary':'btn-outline'} btn-sm" onclick="setTextSize(false)">${ta.normal}</button>
+        <button class="btn ${textLarge?'btn-primary':'btn-outline'} btn-sm" onclick="setTextSize(true)">${ta.large}</button>
+      </div>
+    </div>
+    <div class="card" style="margin-bottom:13px">
+      <div class="flex-row" style="margin-bottom:10px">${icon('heart',15,'#ef4444')} <span style="font-weight:700;font-size:13px;color:#0f172a">${ta.aboutTitle}</span></div>
+      <p style="font-size:13px;color:#334155;line-height:1.7">${ta.aboutDesc}</p>
+      <div style="display:flex;gap:7px;margin-top:11px;flex-wrap:wrap">
+        <span class="badge badge-blue">${ta.course}</span>
+        <span class="badge badge-gray">${ta.version} 3.0.0</span>
+        <span class="badge badge-gray">Prompt 3 of 3 ✓</span>
+        ${modelReady?`<span class="badge badge-model">${icon('zap',9,'#5b21b6',2)} ML Ready</span>`:''}
+      </div>
+    </div>
+    <div class="card" style="margin-bottom:13px">
+      <div class="flex-row" style="margin-bottom:10px">${icon('layers',15,'#7c3aed')} <span style="font-weight:700;font-size:13px;color:#0f172a">${ta.techTitle}</span></div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:8px">${tech.map(item=>`<div style="background:#f8fafc;border-radius:8px;padding:8px 11px;display:flex;align-items:center;gap:9px"><div style="width:8px;height:8px;border-radius:50%;background:${item.c};flex-shrink:0"></div><div><div style="font-size:12.5px;font-weight:700;color:#0f172a">${item.n}</div><div style="font-size:10.5px;color:#94a3b8">${item.d}</div></div></div>`).join('')}</div>
+    </div>
+    <div class="card" style="border-left:3px solid #f59e0b">
+      <div class="flex-row" style="margin-bottom:10px">${icon('alert',15,'#f59e0b')} <span style="font-weight:700;font-size:13px;color:#0f172a">${ta.limTitle}</span></div>
+      ${ta.lims.map(l=>`<div style="display:flex;gap:8px;align-items:flex-start;margin-bottom:7px;font-size:13px;color:#334155;line-height:1.6"><span style="color:#f59e0b;flex-shrink:0;margin-top:2px">•</span><span>${l}</span></div>`).join('')}
+    </div>
+  </div>`;
+}
+function setTextSize(large){
+  textLarge=large;
+  document.documentElement.classList.toggle('text-large',large);
+  document.documentElement.style.fontSize='';
+  localStorage.setItem('lg_textLarge',large?'1':'0');
+  pageAbout();
+}
+
+// ═══════════════════════════════════════════════════════════
+// LANGUAGE
+// ═══════════════════════════════════════════════════════════
+function setLang(l){
+  lang=l;t=T[l]||T.en;
+  document.documentElement.lang=l;
+  document.body.classList.toggle('lang-hi',l==='hi');
+  sessionStorage.setItem('lg_lang',l);
+  actState.lastAssistant=null;
+  render();
+}
+
+// ═══════════════════════════════════════════════════════════
+// MAIN RENDER
+// ═══════════════════════════════════════════════════════════
+function render(){
+  buildNav();
+  switch(page){
+    case 'dashboard':      pageDashboard();   break;
+    case 'activity':       pageActivity();    break;
+    case 'risk':           pageRisk();        break;
+    case 'ai':             pageAI();          break;
+    case 'emergency':      pageEmergency();   break;
+    case 'notifications':  pageNotifications();break;
+    case 'history':        pageHistory();     break;
+    case 'lab':            pageLab();         break;
+    case 'about':          pageAbout();       break;
+    default:               pageDashboard();
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════
+function closeBanner(){
+  document.getElementById('proto-banner').classList.add('hidden');
+  ['#lang-bar','#app','#sidebar','#mob-topbar','#main'].forEach(s=>{
+    const el=document.querySelector(s);if(el)el.classList.add('banner-hidden');
+  });
+  sessionStorage.setItem('bannerDismissed','1');
+}
+
+document.addEventListener('DOMContentLoaded',()=>{
+  // Restore language from session
+  const savedLang=sessionStorage.getItem('lg_lang');
+  if(savedLang&&T[savedLang]){lang=savedLang;t=T[savedLang];document.documentElement.lang=savedLang;document.body.classList.toggle('lang-hi',savedLang==='hi');}
+  // Restore text size from localStorage
+  const savedSize=localStorage.getItem('lg_textLarge');
+  if(savedSize==='1'){textLarge=true;document.documentElement.classList.add('text-large');}
+  if(sessionStorage.getItem('bannerDismissed')==='1') closeBanner();
+  fetch('/api/health').then(r=>r.json()).then(d=>{
+    modelReady=d.model_ready||false;
+    return fetch('/api/notifications').then(r=>r.json()).then(n=>{unreadCount=n.unread||0;});
+  }).catch(()=>{}).finally(()=>render());
+});
+</script>
+</body>
+</html>
